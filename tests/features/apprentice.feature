@@ -1,6 +1,6 @@
 @apprentice
 Feature: Apprentice tier (default build)
-  The commands every sphinx binary ships with: add, list, gen, clear and the
+  The commands every sphinx binary ships with: add, list, generate, clear and the
   interactive walker. Available in every tier.
 
   Scenario: Root help shows usage and the apprentice commands
@@ -33,13 +33,13 @@ Feature: Apprentice tier (default build)
     Then the exit code is 0
     And stdout contains "List entries"
 
-  Scenario: gen help
-    When I run sphinx "gen --help"
+  Scenario: generate help
+    When I run sphinx "generate --help"
     Then the exit code is 0
     And stdout contains "Generate a random password"
 
-  Scenario: gen produces a password without a vault
-    When I run sphinx "gen -l 12"
+  Scenario: generate produces a password without a vault
+    When I run sphinx "generate --length 12"
     Then the exit code is 0
     And stdout contains "Password:"
 
