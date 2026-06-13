@@ -14,7 +14,7 @@
     "scripts": {
       "login": "copy $1 -u -t 4s && copy $1 -t 4s && topt $1 -c -t 5s",
       "create": "add $1 -l 25 && topt add $1",
-      "show": "ls $1 -s && topt $2"
+      "show": "list $1 -s && topt $2"
     },
     "timeout": "10m"
   }

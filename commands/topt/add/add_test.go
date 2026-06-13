@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"testing"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/totp"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/totp"
 
 	"github.com/stretchr/testify/assert"
 )

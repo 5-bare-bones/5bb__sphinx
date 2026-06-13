@@ -4,8 +4,8 @@ import (
 	"os"
 	"os/exec"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/config"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/config"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -13,7 +13,7 @@ import (
 )
 
 const example = `
-kure config edit`
+sphinx config edit`
 
 // NewCmd returns a new command.
 func NewCmd(db *bolt.DB) *cobra.Command {
@@ -25,7 +25,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	}
 }
 
-func runEdit() cmdutil.RunEFunc {
+func runEdit() cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		path := config.Filename()
 

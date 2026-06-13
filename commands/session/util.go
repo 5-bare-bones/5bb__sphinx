@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/GGP1/kure/sig"
-	"github.com/GGP1/kure/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 	"github.com/chzyer/readline"
 
 	"github.com/spf13/cobra"
@@ -72,9 +72,9 @@ func idleTimer(rl *readline.Instance, done chan struct{}, timeout *timeout) {
 // parseCommands looks for multiple commands concatenated by the logical AND operator and
 // splits them into different slices.
 //
-//	Given "ls && copy github && 2fa"
+//	Given "list && copy github && topt"
 //
-//	Return [["ls"], ["copy", "github"], ["2fa"]].
+//	Return [["list"], ["copy", "github"], ["topt"]].
 func parseCommands(args []string) [][]string {
 	// The underlying array will grow only if the script has multiple "&&" in a row
 	ampersands := make([]int, 0, len(args)/2)

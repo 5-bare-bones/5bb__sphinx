@@ -3,10 +3,10 @@ package rotate
 import (
 	"testing"
 
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
 	"github.com/GGP1/atoll"
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/pb"
 
 	"github.com/stretchr/testify/assert"
 )

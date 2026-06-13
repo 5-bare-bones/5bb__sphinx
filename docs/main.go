@@ -46,7 +46,7 @@ func main() {
 //
 // Please make sure not to overwrite that information in those specific cases.
 //
-// Usage: main --cmd ls.
+// Usage: main --cmd list.
 func cmdDocs(args []string) error {
 	root := root.NewCmd(nil)
 

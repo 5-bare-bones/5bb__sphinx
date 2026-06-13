@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	cmdutil "github.com/GGP1/kure/commands"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
 )
 
 // log represents a log file.

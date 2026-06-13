@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/file"
-	"github.com/GGP1/kure/pb"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -17,13 +17,13 @@ import (
 
 const example = `
 * Create a file and overwrite if it already exists
-kure file touch fileName -p path/to/folder -o
+sphinx file touch fileName -p path/to/folder -o
 
 * Create multiple files in the current directory
-kure file touch file1 file2 file3
+sphinx file touch file1 file2 file3
 
 * Create all the files (includes folders and subfolders)
-kure file touch -p path/to/folder`
+sphinx file touch -p path/to/folder`
 
 type touchOptions struct {
 	path      string
@@ -38,11 +38,11 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 		Short: "Create stored files",
 		Long: `Create one, multiple, all the files or an specific directory.
 
-For creating an specific file the extension must be included in the arguments, if not, kure will consider that the user is trying to create a directory and will create all the files in it.
+For creating an specific file the extension must be included in the arguments, if not, sphinx will consider that the user is trying to create a directory and will create all the files in it.
 
 In case any of the paths contains spaces within it, it must be enclosed by double quotes.
 
-In case a path is passed, kure will create any missing folders for you.`,
+In case a path is passed, sphinx will create any missing folders for you.`,
 		Aliases: []string{"th"},
 		Example: example,
 		Args: func(cmd *cobra.Command, args []string) error {
@@ -65,7 +65,7 @@ In case a path is passed, kure will create any missing folders for you.`,
 	return cmd
 }
 
-func runTouch(db *bolt.DB, opts *touchOptions) cmdutil.RunEFunc {
+func runTouch(db *bolt.DB, opts *touchOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		absolute, err := filepath.Abs(opts.path)
 		if err != nil {

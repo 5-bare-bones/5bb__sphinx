@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"testing"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/db/auth"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/db/auth"
 
 	"github.com/awnumar/memguard"
 	"github.com/stretchr/testify/assert"

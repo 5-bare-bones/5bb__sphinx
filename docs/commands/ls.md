@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx ls <name> [-f filter] [-q qr] [-s show]`
+`sphinx list <name> [-f filter] [-q qr] [-s show]`
 
 *Aliases*: entries, list.
 
@@ -22,20 +22,20 @@ List entries.
 
 List an entry:
 ```
-sphinx ls Sample
+sphinx list Sample
 ```
 
 List one and show sensitive information:
 ```
-sphinx ls Sample -s
+sphinx list Sample -s
 ```
 
 Filter:
 ```
-sphinx ls Sample -f
+sphinx list Sample -f
 ```
 
 List all entries:
 ```
-sphinx ls
+sphinx list
 ```

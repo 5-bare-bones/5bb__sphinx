@@ -1,7 +1,7 @@
 package it
 
 import (
-	"github.com/GGP1/kure/sig"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/terminal"

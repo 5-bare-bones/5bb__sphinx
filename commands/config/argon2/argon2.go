@@ -3,16 +3,16 @@ package argon2
 import (
 	"fmt"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/commands/config/argon2/test"
-	authDB "github.com/GGP1/kure/db/auth"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/commands/config/argon2/test"
+	authDB "github.com/5-bare-bones/5bb__sphinx/db/auth"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
 )
 
 const example = `
-kure config argon2`
+sphinx config argon2`
 
 // NewCmd returns a new command.
 func NewCmd(db *bolt.DB) *cobra.Command {
@@ -29,7 +29,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runArgon2(db *bolt.DB) cmdutil.RunEFunc {
+func runArgon2(db *bolt.DB) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		params, err := authDB.GetParams(db)
 		if err != nil {

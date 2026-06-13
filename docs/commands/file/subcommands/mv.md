@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx file mv <src> <dst>`
+`sphinx file move <src> <dst>`
 
 ## Description
 
@@ -16,15 +16,15 @@ No flags.
 
 Move a file:
 ```
-sphinx file mv oldFile newFile
+sphinx file move oldFile newFile
 ```
 
 Move a directory:
 ```
-sphinx file mv oldDir/ newDir/
+sphinx file move oldDir/ newDir/
 ```
 
 Move a file into a directory:
 ```
-sphinx file mv oldDir/test.txt newDir/
+sphinx file move oldDir/test.txt newDir/
 ```

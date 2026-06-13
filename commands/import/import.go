@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/db/totp"
-	"github.com/GGP1/kure/pb"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/db/totp"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -19,10 +19,10 @@ import (
 
 const example = `
 * Import
-kure import keepass -p path/to/file
+sphinx import keepass -p path/to/file
 
 * Import and delete the file:
-kure import 1password -e -p path/to/file`
+sphinx import 1password -e -p path/to/file`
 
 type importOptions struct {
 	path  string
@@ -62,7 +62,7 @@ Supported:
 	return cmd
 }
 
-func runImport(db *bolt.DB, opts *importOptions) cmdutil.RunEFunc {
+func runImport(db *bolt.DB, opts *importOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		manager := strings.Join(args, " ")
 		manager = strings.ToLower(manager)

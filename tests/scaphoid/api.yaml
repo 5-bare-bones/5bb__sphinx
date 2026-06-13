@@ -1,0 +1,131 @@
+scaphoid:
+  modules:
+    environment:
+      classes:
+        EnvironmentMode:
+          kind: Enum
+          members:
+            CLEAN: "clean"      # completely empty — no variables at all
+            REPLACE: "replace"  # exactly the given variables; os.environ ignored
+            MERGE: "merge"      # os.environ + variables (variables win)
+            ALLOW: "allow"      # selected keys from os.environ + variables
+            DENY: "deny"        # os.environ minus blocked keys + variables
+
+        EnvironmentConfig:
+          kind: dataclass frozen
+          fields:
+            mode: EnvironmentMode  # default MERGE
+            variables: dict[str, str] | None  # default None
+            allow_list: frozenset[str] | None  # default None (ALLOW mode)
+            deny_list: frozenset[str] | None   # default None (DENY mode)
+          validation:
+            __post_init__: REPLACE requires variables; ALLOW requires allow_list; DENY requires deny_list
+          factories:
+            EnvironmentConfig.clean() -> EnvironmentConfig
+            EnvironmentConfig.replace(variables: Mapping) -> EnvironmentConfig
+            EnvironmentConfig.merge(variables: Mapping | None = None) -> EnvironmentConfig
+            EnvironmentConfig.allow(keys: set, variables: Mapping | None = None) -> EnvironmentConfig
+            EnvironmentConfig.deny(keys: set, variables: Mapping | None = None) -> EnvironmentConfig
+          mutation:
+            with_var(key: str, value: str) -> EnvironmentConfig  # returns new instance
+          resolution:
+            resolve() -> dict[str, str]
+
+    streams:
+      classes:
+        OutputStream:
+          kind: dataclass frozen
+          fields:
+            content: str
+            label: str  # default "output"
+          private:
+            _fail(what: str) -> OutputStream
+          assertions:
+            contains(needle: str) -> OutputStream
+            excludes(needle: str) -> OutputStream
+            matches(pattern: str) -> OutputStream
+            equals(expected: str, *, strip: bool = True) -> OutputStream
+            is_empty() -> OutputStream
+            has_line_count(n: int) -> OutputStream
+          accessors:
+            lines() -> list[str]
+            line_count() -> int
+          dunder:
+            __contains__(needle: str) -> bool
+            __str__() -> str
+
+        StreamSearch:
+          kind: dataclass frozen
+          fields:
+            stdout: OutputStream
+            stderr: OutputStream
+          private:
+            _fail(what: str) -> StreamSearch
+          assertions:
+            contains(needle: str) -> StreamSearch
+            excludes(needle: str) -> StreamSearch
+          accessors:
+            in_stdout_or_stderr(needle: str) -> tuple[bool, bool]
+
+    result:
+      classes:
+        ExecutionResult:
+          kind: dataclass frozen
+          fields:
+            exit_code: int
+            stdout: OutputStream
+            stderr: OutputStream
+            elapsed_ms: int
+            command: list[str]
+            cwd: str | None  # default None
+          factory:
+            from_completed(*, exit_code, stdout, stderr, elapsed_ms, command, cwd=None) -> ExecutionResult
+          properties:
+            ok -> bool
+            output -> StreamSearch
+          private:
+            _context() -> str
+            _fail(what: str) -> ExecutionResult
+          assertions:
+            succeeded() -> ExecutionResult
+            failed() -> ExecutionResult
+            has_exit_code(code: int) -> ExecutionResult
+
+    binary_execution:
+      classes:
+        RunConfig:
+          kind: dataclass frozen
+          fields:
+            path: str | PathLike | None  # default None
+            environment: Environment | None  # default None → inherit from parent
+            timeout: float | None  # default 30.0
+            shell: bool  # default False
+            check: bool  # default False
+            encoding: str  # default "utf-8"
+          methods:
+            replace(**changes) -> RunConfig
+
+        BinaryExecution:
+          kind: class (mutable)
+          attributes:
+            config: RunConfig
+            last: ExecutionResult | None  # default None
+          methods:
+            __init__(config: RunConfig | None = None)
+            set_env(key: str, value: str) -> None
+            run(command: str | Sequence[str], *, stdin: str | None, **overrides) -> ExecutionResult
+
+      functions:
+        run(command: str | Sequence[str], config: RunConfig | None = None, *, stdin: str | None = None) -> ExecutionResult
+        _resolve_env(config: RunConfig) -> dict[str, str] | None  # private
+
+  behave_hooks:  # tests/environment.py
+    before_scenario(context, scenario):
+      sets:
+        context.returncode: None
+        context.stdout: str ""
+        context.stderr: str ""
+        context.extra_env: dict {}
+        context.tmpdir: str  # tempfile.mkdtemp
+    after_scenario(context, scenario):
+      removes: context.tmpdir  # shutil.rmtree if exists

@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/GGP1/kure/sig"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
 
 	"github.com/awnumar/memguard"
 	"github.com/pkg/errors"
@@ -76,8 +76,8 @@ func DisplayQRCode(secret string) error {
 	return nil
 }
 
-// Scanln scans a single line and returns the input.
-func Scanln(r *bufio.Reader, field string) string {
+// ScanOneLine scans a single line and returns the input.
+func ScanOneLine(r *bufio.Reader, field string) string {
 	fmt.Printf("%s: ", field)
 
 	text, _, err := r.ReadLine()
@@ -92,8 +92,8 @@ func Scanln(r *bufio.Reader, field string) string {
 	return strings.TrimSpace(string(text))
 }
 
-// Scanlns scans multiple lines and returns the input.
-func Scanlns(r *bufio.Reader, field string) string {
+// ScanMultipleLines scans multiple lines and returns the input.
+func ScanMultipleLines(r *bufio.Reader, field string) string {
 	fmt.Print(field, " (type < to finish): ")
 
 	text, err := r.ReadString('<')

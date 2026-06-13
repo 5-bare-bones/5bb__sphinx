@@ -11,8 +11,8 @@ Card operations.
 - [`sphinx card add`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/card/subcommands/add.md): Add a card.
 - [`sphinx card copy`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/card/subcommands/copy.md): Copy card number or cvc.
 - [`sphinx card edit`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/card/subcommands/edit.md): Edit a card.
-- [`sphinx card list`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/card/subcommands/ls.md): List cards.
-- [`sphinx card rm`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/card/subcommands/rm.md): Remove cards from the database.
+- [`sphinx card list`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/card/subcommands/list.md): List cards.
+- [`sphinx card del`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/card/subcommands/del.md): Remove cards from the database.
 
 ## Flags
 

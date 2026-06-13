@@ -57,8 +57,8 @@ func TestClearTerminalHistory(t *testing.T) {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		if strings.HasPrefix(strings.TrimSpace(scanner.Text()), "kure ") {
-			t.Errorf("The history file contains kure commands: %s", scanner.Text())
+		if strings.HasPrefix(strings.TrimSpace(scanner.Text()), "sphinx ") {
+			t.Errorf("The history file contains sphinx commands: %s", scanner.Text())
 		}
 	}
 

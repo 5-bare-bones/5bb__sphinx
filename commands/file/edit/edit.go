@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/file"
-	"github.com/GGP1/kure/pb"
-	"github.com/GGP1/kure/sig"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -21,10 +21,10 @@ import (
 
 const example = `
 * Edit a file
-kure file edit Sample -e nvim
+sphinx file edit Sample -e nvim
 
 * Write a file's content to a temporary file and log its path
-kure file edit Sample -l`
+sphinx file edit Sample -l`
 
 type editOptions struct {
 	editor string
@@ -42,8 +42,8 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 Caution: a temporary file is created with a random name, it will be erased right after the first save but it could still be read by a malicious actor.
 
 Notes:
-	- Some editors flush the changes to the disk when closed, kure won't notice any modifications until then.
-	- Modifying the file with a different program will prevent kure from erasing the file as its being blocked by another process.`,
+	- Some editors flush the changes to the disk when closed, sphinx won't notice any modifications until then.
+	- Modifying the file with a different program will prevent sphinx from erasing the file as its being blocked by another process.`,
 		Example: example,
 		Args:    cmdutil.MustExist(db, cmdutil.File),
 		RunE:    runEdit(db, &opts),
@@ -60,7 +60,7 @@ Notes:
 	return cmd
 }
 
-func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunEFunc {
+func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)
@@ -130,7 +130,7 @@ func createTempFile(ext string, content []byte) (string, error) {
 func logTempFilename(filename string) {
 	fmt.Printf(`Temporary file path: %s
 
-Caution: if any process is accessing the file at the time of modification, kure won't be able to erase it
+Caution: if any process is accessing the file at the time of modification, sphinx won't be able to erase it
 `, filepath.ToSlash(filename))
 }
 

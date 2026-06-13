@@ -4,35 +4,21 @@ import (
 	"fmt"
 	"os"
 	"runtime/debug"
+	"slices"
+	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	tfa "github.com/GGP1/kure/commands/2fa"
-	"github.com/GGP1/kure/commands/add"
-	"github.com/GGP1/kure/commands/backup"
-	"github.com/GGP1/kure/commands/card"
-	"github.com/GGP1/kure/commands/clear"
-	"github.com/GGP1/kure/commands/config"
-	"github.com/GGP1/kure/commands/copy"
-	"github.com/GGP1/kure/commands/edit"
-	"github.com/GGP1/kure/commands/export"
-	"github.com/GGP1/kure/commands/file"
-	"github.com/GGP1/kure/commands/gen"
-	importt "github.com/GGP1/kure/commands/import"
-	"github.com/GGP1/kure/commands/it"
-	"github.com/GGP1/kure/commands/ls"
-	"github.com/GGP1/kure/commands/restore"
-	"github.com/GGP1/kure/commands/rm"
-	"github.com/GGP1/kure/commands/rotate"
-	"github.com/GGP1/kure/commands/session"
-	"github.com/GGP1/kure/commands/stats"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/internal/buildinfo"
+	"github.com/5-bare-bones/5bb__sphinx/internal/registry"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
 )
 
-var statelessCommands = map[string]struct{}{
-	"clear":     {},
-	"gen":       {},
+// builtinStateless are the cobra/help built-ins that never touch the database.
+// Real commands declare statelessness via registry.Entry.Stateless instead, so
+// the set stays correct for whatever tier was compiled in.
+var builtinStateless = map[string]struct{}{
 	"help":      {},
 	"-v":        {},
 	"--version": {},
@@ -42,12 +28,15 @@ type rootOptions struct {
 	version bool
 }
 
-// NewCmd returns a new command.
+// NewCmd assembles the root command from whatever registered itself into the
+// registry in this build. Which commands that is depends on the tier-tagged
+// import aggregators (see register_*.go); lower tiers literally compile in
+// fewer command packages.
 func NewCmd(db *bolt.DB) *cobra.Command {
 	opts := rootOptions{}
 	cmd := &cobra.Command{
-		Use:           "kure",
-		Short:         "kure ~ CLI password manager with sessions",
+		Use:           "sphinx",
+		Short:         "sphinx ~ CLI password manager with sessions",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		CompletionOptions: cobra.CompletionOptions{
@@ -56,33 +45,60 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 		RunE: runRoot(&opts),
 	}
 
-	cmd.Flags().BoolVarP(&opts.version, "version", "v", false, "display kure version")
-	cmd.AddCommand(
-		tfa.NewCmd(db),
-		add.NewCmd(db, os.Stdin),
-		backup.NewCmd(db),
-		card.NewCmd(db),
-		clear.NewCmd(),
-		config.NewCmd(db),
-		copy.NewCmd(db),
-		edit.NewCmd(db),
-		export.NewCmd(db),
-		file.NewCmd(db),
-		gen.NewCmd(),
-		importt.NewCmd(db),
-		it.NewCmd(db),
-		ls.NewCmd(db),
-		restore.NewCmd(db),
-		rotate.NewCmd(db),
-		rm.NewCmd(db, os.Stdin),
-		session.NewCmd(os.Stdin),
-		stats.NewCmd(db),
-	)
+	cmd.Flags().BoolVarP(&opts.version, "version", "v", false, "display sphinx version")
+
+	ctx := registry.BuildContext{DB: db, In: os.Stdin, Out: os.Stdout}
+	entries := registry.Entries()
+
+	// First pass: build every top-level command and index it by verb so that
+	// subcommands can attach to their parent group.
+	groups := make(map[string]*cobra.Command, len(entries))
+	for _, e := range entries {
+		if e.Parent != "" {
+			continue
+		}
+		c := e.New(ctx)
+		applyIdentity(c, e)
+		groups[e.Verb] = c
+		cmd.AddCommand(c)
+	}
+
+	// Second pass: attach subcommands to their parent group. A child whose
+	// parent was not compiled into this build is skipped defensively.
+	for _, e := range entries {
+		if e.Parent == "" {
+			continue
+		}
+		if parent, ok := groups[e.Parent]; ok {
+			child := e.New(ctx)
+			applyIdentity(child, e)
+			parent.AddCommand(child)
+		}
+	}
 
 	return cmd
 }
 
-func runRoot(opts *rootOptions) cmdutil.RunEFunc {
+// applyIdentity makes the registry verb the command's primary name and adds its
+// aliases. If the constructor already customized the command (it sets its own
+// Use and aliases, e.g. the rank-renamed `it`), the name is left untouched.
+func applyIdentity(c *cobra.Command, e registry.Entry) {
+	if e.Verb != "" && len(c.Aliases) == 0 {
+		if _, rest, found := strings.Cut(c.Use, " "); found {
+			c.Use = e.Verb + " " + rest
+		} else {
+			c.Use = e.Verb
+		}
+	}
+	for _, a := range e.Aliases {
+		if a == c.Name() || slices.Contains(c.Aliases, a) {
+			continue
+		}
+		c.Aliases = append(c.Aliases, a)
+	}
+}
+
+func runRoot(opts *rootOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.version {
 			printVersion()
@@ -95,21 +111,30 @@ func runRoot(opts *rootOptions) cmdutil.RunEFunc {
 }
 
 func printVersion() {
-	bi, _ := debug.ReadBuildInfo()
-
-	var lastCommitHash string
-	for _, setting := range bi.Settings {
-		if setting.Key == "vcs.revision" {
-			lastCommitHash = setting.Value
-			break
+	var rev string
+	if bi, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range bi.Settings {
+			if setting.Key == "vcs.revision" {
+				rev = setting.Value
+				break
+			}
 		}
 	}
 
-	fmt.Printf("[%s] %s %s\n", bi.GoVersion, bi.Main.Version, lastCommitHash)
+	fmt.Printf("sphinx %s [tier: %s] %s\n", buildinfo.Version, buildinfo.Tier, rev)
 }
 
-// IsStatelessCommand returns true if the specified command does not require opening the database.
+// IsStatelessCommand reports whether the named command can run without opening
+// the database. It consults the registry so the answer reflects the compiled-in
+// tier, plus the cobra built-ins.
 func IsStatelessCommand(command string) bool {
-	_, ok := statelessCommands[command]
-	return ok
+	if _, ok := builtinStateless[command]; ok {
+		return true
+	}
+	for _, e := range registry.Entries() {
+		if e.Parent == "" && e.Verb == command && e.Stateless {
+			return true
+		}
+	}
+	return false
 }

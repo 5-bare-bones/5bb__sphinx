@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/db/totp"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/db/totp"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -17,7 +17,7 @@ import (
 )
 
 const example = `
-kure export <manager-name> -p path/to/file`
+sphinx export <manager-name> -p path/to/file`
 
 type exportOptions struct {
 	path string
@@ -29,8 +29,8 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export <manager-name>",
 		Short: "Export entries",
-		Long: `Export entries to other password managers. 
-		
+		Long: `Export entries to other password managers.
+
 This command creates a CSV file with all the entries unencrypted, make sure to delete it after it's used.
 
 Supported:
@@ -52,7 +52,7 @@ Supported:
 	return cmd
 }
 
-func runExport(db *bolt.DB, opts *exportOptions) cmdutil.RunEFunc {
+func runExport(db *bolt.DB, opts *exportOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		manager := strings.Join(args, " ")
 		manager = strings.ToLower(manager)

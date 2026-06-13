@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/sig"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -22,10 +22,10 @@ import (
 
 const example = `
 * Create a file backup
-kure backup --path path/to/file
+sphinx backup --path path/to/file
 
 * Serve the database on a local server, port 7777
-kure backup --http --port 7777
+sphinx backup --http --port 7777
 
 * Download database
 curl localhost:7777 > database_name`
@@ -62,7 +62,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func (opts *backupOptions) runBackup(db *bolt.DB) cmdutil.RunEFunc {
+func (opts *backupOptions) runBackup(db *bolt.DB) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.httpB {
 			return serveFile(db, opts.port)

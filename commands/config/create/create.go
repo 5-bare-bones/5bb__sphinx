@@ -4,15 +4,15 @@ import (
 	"os"
 	"os/exec"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/config"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/config"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 const example = `
-kure config create -p path/to/file`
+sphinx config create -p path/to/file`
 
 type createOptions struct {
 	path string
@@ -38,7 +38,7 @@ func NewCmd() *cobra.Command {
 	return cmd
 }
 
-func runCreate(opts *createOptions) cmdutil.RunEFunc {
+func runCreate(opts *createOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.path == "" {
 			return cmdutil.ErrInvalidPath

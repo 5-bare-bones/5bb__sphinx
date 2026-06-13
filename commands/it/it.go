@@ -3,7 +3,7 @@ package it
 import (
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -11,16 +11,16 @@ import (
 
 const example = `
 * No arguments
-kure it
+sphinx it
 
 * Command without flags
-kure it ls
+sphinx it list
 
 * Command with flags
-kure it ls -s -q
+sphinx it list -s -q
 
 * Only the name
-kure sample`
+sphinx sample`
 
 // NewCmd returns a new command.
 func NewCmd(db *bolt.DB) *cobra.Command {
@@ -40,7 +40,7 @@ name 				command and flags`,
 	}
 }
 
-func runIt(db *bolt.DB) cmdutil.RunEFunc {
+func runIt(db *bolt.DB) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		root := cmd.Root()
 		// Get rid of unnecessary information and reset in case we are inside a session
@@ -88,7 +88,7 @@ func runIt(db *bolt.DB) cmdutil.RunEFunc {
 
 			// The validation won't fail if the user lists records
 			err := command.ValidateArgs([]string{name})
-			if err != nil || strings.Contains(command.Name(), "ls") {
+			if err != nil || strings.Contains(command.Name(), "list") {
 				// Received commands+flags, request name
 				arguments, err := requestName(db, args)
 				if err != nil {
@@ -114,7 +114,7 @@ func runIt(db *bolt.DB) cmdutil.RunEFunc {
 
 func execute(root *cobra.Command, args []string) error {
 	// Discard empty arguments as some commands will fail if we don't
-	// eg. file cat
+	// eg. file show
 	filteredArgs := make([]string, 0, len(args))
 	for _, a := range args {
 		if a != "" {
@@ -162,21 +162,21 @@ func requestName(db *bolt.DB, args []string) ([]string, error) {
 	// Behave depending on which command the user is executing
 	switch {
 	case contains("add"),
-		contains("ls") && contains("-f"), // Filter
-		contains("rm") && contains("-d"): // Remove directory
+		contains("list") && contains("-f"), // Filter
+		contains("del") && contains("-d"):  // Remove directory
 		name, err = inputName()
 
 	case contains("import"), contains("export"):
 		name, err = selectManager(db)
 
-	case contains("file cat"), contains("file touch"):
+	case contains("file show"), contains("file touch"):
 		names, err := fileMultiselect(db)
 		if err != nil {
 			return nil, err
 		}
 		return append(args, names...), nil
 
-	case contains("file mv"):
+	case contains("file move"):
 		names, err := fileMvNames(db)
 		if err != nil {
 			return nil, err
@@ -184,7 +184,7 @@ func requestName(db *bolt.DB, args []string) ([]string, error) {
 		return append(args, names...), nil
 
 	default:
-		list := []string{"2fa", "copy", "edit", "ls", "rm"}
+		list := []string{"topt", "copy", "edit", "list", "del"}
 		// Request the name depending on the command
 		for _, cmd := range list {
 			if contains(cmd) {

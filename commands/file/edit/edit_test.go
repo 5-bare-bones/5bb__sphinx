@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/file"
-	"github.com/GGP1/kure/pb"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
 
 	"github.com/stretchr/testify/assert"
 )

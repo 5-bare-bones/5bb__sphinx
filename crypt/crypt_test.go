@@ -5,7 +5,7 @@ import (
 	"crypto/subtle"
 	"testing"
 
-	"github.com/GGP1/kure/config"
+	"github.com/5-bare-bones/5bb__sphinx/config"
 
 	"github.com/awnumar/memguard"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,7 @@ func TestCrypt(t *testing.T) {
 		data     string
 		password string
 	}{
-		{"kure cli password manager", "test1"},
+		{"sphinx cli password manager", "test1"},
 		{"advanced standard encryption", "test2"},
 	}
 

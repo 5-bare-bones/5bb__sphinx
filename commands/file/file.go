@@ -1,40 +1,23 @@
 package file
 
 import (
-	"os"
-
-	fadd "github.com/GGP1/kure/commands/file/add"
-	fcat "github.com/GGP1/kure/commands/file/cat"
-	fedit "github.com/GGP1/kure/commands/file/edit"
-	fls "github.com/GGP1/kure/commands/file/ls"
-	fmv "github.com/GGP1/kure/commands/file/mv"
-	frm "github.com/GGP1/kure/commands/file/rm"
-	ftouch "github.com/GGP1/kure/commands/file/touch"
-
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
 )
 
 const example = `
-kure file (add|cat|edit|ls|mv|rm|touch)`
+sphinx file (add|del|show|edit|list|move|touch)`
 
-// NewCmd returns a new command.
+// NewCmd returns the bare "file" group command.
+//
+// Its subcommands no longer wire themselves up here; each registers itself into
+// the registry with Parent "file" and is attached by commands/root. This lets
+// higher-tier subcommands (move, del — scholar) be gated independently of the
+// lower-tier ones (add, show, list, touch — adept).
 func NewCmd(db *bolt.DB) *cobra.Command {
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:     "file",
 		Short:   "File operations",
 		Example: example,
 	}
-
-	cmd.AddCommand(
-		fadd.NewCmd(db, os.Stdin),
-		fcat.NewCmd(db, os.Stdout),
-		fedit.NewCmd(db),
-		fls.NewCmd(db),
-		fmv.NewCmd(db),
-		frm.NewCmd(db, os.Stdin),
-		ftouch.NewCmd(db),
-	)
-
-	return cmd
 }

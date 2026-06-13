@@ -3,18 +3,18 @@ package card
 import (
 	"os"
 
-	cadd "github.com/GGP1/kure/commands/card/add"
-	ccopy "github.com/GGP1/kure/commands/card/copy"
-	cedit "github.com/GGP1/kure/commands/card/edit"
-	cls "github.com/GGP1/kure/commands/card/ls"
-	crm "github.com/GGP1/kure/commands/card/rm"
+	cadd "github.com/5-bare-bones/5bb__sphinx/commands/card/add"
+	ccopy "github.com/5-bare-bones/5bb__sphinx/commands/card/copy"
+	crm "github.com/5-bare-bones/5bb__sphinx/commands/card/del"
+	cedit "github.com/5-bare-bones/5bb__sphinx/commands/card/edit"
+	cls "github.com/5-bare-bones/5bb__sphinx/commands/card/list"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
 )
 
 const example = `
-kure card (add|copy|edit|ls|rm)`
+sphinx card (add|copy|edit|list|del)`
 
 // NewCmd returns a new command.
 func NewCmd(db *bolt.DB) *cobra.Command {

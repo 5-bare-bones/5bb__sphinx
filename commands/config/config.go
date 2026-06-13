@@ -5,11 +5,11 @@ import (
 	"os"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	argon2cmd "github.com/GGP1/kure/commands/config/argon2"
-	"github.com/GGP1/kure/commands/config/create"
-	"github.com/GGP1/kure/commands/config/edit"
-	"github.com/GGP1/kure/config"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	argon2cmd "github.com/5-bare-bones/5bb__sphinx/commands/config/argon2"
+	"github.com/5-bare-bones/5bb__sphinx/commands/config/create"
+	"github.com/5-bare-bones/5bb__sphinx/commands/config/edit"
+	"github.com/5-bare-bones/5bb__sphinx/config"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -18,7 +18,7 @@ import (
 
 const example = `
 * Read configuration file
-kure config`
+sphinx config`
 
 // NewCmd returns a new command.
 func NewCmd(db *bolt.DB) *cobra.Command {
@@ -35,7 +35,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runConfig() cmdutil.RunEFunc {
+func runConfig() cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		path := config.Filename()
 		data, err := os.ReadFile(path)
@@ -46,7 +46,7 @@ func runConfig() cmdutil.RunEFunc {
 		content := strings.TrimSpace(string(data))
 		fmt.Printf(`
 File location: %s
-		
+
 %s
 `, path, content)
 

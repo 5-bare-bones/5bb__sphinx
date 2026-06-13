@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/db/card"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/db/file"
-	"github.com/GGP1/kure/db/totp"
-	"github.com/GGP1/kure/orderedmap"
-	"github.com/GGP1/kure/pb"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/db/card"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	"github.com/5-bare-bones/5bb__sphinx/db/totp"
+	"github.com/5-bare-bones/5bb__sphinx/orderedmap"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
 
 	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
@@ -155,7 +155,7 @@ func TestFmtExpires(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			got, err := FmtExpires(tc.expires)
+			got, err := FormatExpires(tc.expires)
 			assert.NoError(t, err, "Failed formatting expires")
 
 			assert.Equal(t, tc.expected, got)
@@ -163,7 +163,7 @@ func TestFmtExpires(t *testing.T) {
 	}
 
 	t.Run("Invalid format", func(t *testing.T) {
-		_, err := FmtExpires("invalid format")
+		_, err := FormatExpires("invalid format")
 		assert.Error(t, err)
 	})
 }
@@ -238,7 +238,7 @@ func TestMustExist(t *testing.T) {
 	})
 }
 
-func TestMustExistLs(t *testing.T) {
+func TestMustExistList(t *testing.T) {
 	db := SetContext(t)
 	cmd := &cobra.Command{}
 	cmd.Flags().Bool("filter", false, "")
@@ -271,7 +271,7 @@ func TestMustExistLs(t *testing.T) {
 		for _, tc := range cases {
 			t.Run(tc.desc, func(t *testing.T) {
 				for _, obj := range objects {
-					cmd.Args = MustExistLs(db, obj)
+					cmd.Args = MustExistList(db, obj)
 					cmd.Flags().Set("filter", strconv.FormatBool(tc.filter))
 
 					err := cmd.Args(cmd, []string{tc.name})
@@ -282,7 +282,7 @@ func TestMustExistLs(t *testing.T) {
 	})
 
 	t.Run("Fail", func(t *testing.T) {
-		cmd.Args = MustExistLs(db, Entry)
+		cmd.Args = MustExistList(db, Entry)
 		cmd.Flag("filter").Changed = false
 
 		err := cmd.Args(cmd, []string{"non-existent"})
@@ -599,7 +599,7 @@ func TestGetNameSuggestions(t *testing.T) {
 		{
 			desc: "By distance",
 			names: []string{
-				"cat",
+				"show",
 				"bat",
 				"category",
 				"rat",
@@ -608,7 +608,7 @@ func TestGetNameSuggestions(t *testing.T) {
 			},
 			name: "hay",
 			expectedSuggestions: []string{
-				"cat",
+				"show",
 				"bat",
 				"rat",
 				"car",
@@ -646,7 +646,7 @@ func TestLevenshteinDistance(t *testing.T) {
 	}{
 		{
 			nameA:            "car",
-			nameB:            "cat",
+			nameB:            "show",
 			expectedDistance: 1,
 		},
 		{

@@ -6,11 +6,11 @@ import (
 	"io"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/commands/add/phrase"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/pb"
-	"github.com/GGP1/kure/terminal"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/commands/add/phrase"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/GGP1/atoll"
 
@@ -21,10 +21,10 @@ import (
 
 const example = `
 * Add an entry using a custom password
-kure add Sample -c
+sphinx add Sample -c
 
 * Add an entry generating a random password
-kure add Sample -l 27 -L 1,2,3,4,5 -i & -e / -r`
+sphinx add Sample -l 27 -L 1,2,3,4,5 -i & -e / -r`
 
 type addOptions struct {
 	include, exclude string
@@ -62,7 +62,7 @@ func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
 	return cmd
 }
 
-func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunEFunc {
+func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)
@@ -139,7 +139,7 @@ func entryInput(r io.Reader, name string, custom bool) (*pb.Entry, error) {
 	var password string
 	reader := bufio.NewReader(r)
 
-	username := terminal.Scanln(reader, "Username")
+	username := terminal.ScanOneLine(reader, "Username")
 	if custom {
 		enclave, err := terminal.ScanPassword("Password", true)
 		if err != nil {
@@ -153,11 +153,11 @@ func entryInput(r io.Reader, name string, custom bool) (*pb.Entry, error) {
 
 		password = pwd.String()
 	}
-	url := terminal.Scanln(reader, "URL")
-	expires := terminal.Scanln(reader, "Expires [dd/mm/yy]")
-	notes := terminal.Scanlns(reader, "Notes")
+	url := terminal.ScanOneLine(reader, "URL")
+	expires := terminal.ScanOneLine(reader, "Expires [dd/mm/yy]")
+	notes := terminal.ScanMultipleLines(reader, "Notes")
 
-	exp, err := cmdutil.FmtExpires(expires)
+	exp, err := cmdutil.FormatExpires(expires)
 	if err != nil {
 		return nil, err
 	}

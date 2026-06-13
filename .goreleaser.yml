@@ -1,5 +1,5 @@
 version: 2
-project_name: kure
+project_name: sphinx
 before:
   hooks:
     - go mod download
@@ -55,7 +55,7 @@ homebrew_casks:
       owner: GGP1
       name: homebrew-tap
     directory: Casks
-    homepage: https://github.com/GGP1/kure
+    homepage: https://github.com/5-bare-bones/5bb__sphinx
     description: Cross-platform CLI password manager with sessions
     license: Apache 2.0
 
@@ -64,7 +64,7 @@ scoops:
     repository:
       owner: GGP1
       name: scoop-bucket
-    homepage:  https://github.com/GGP1/kure
+    homepage:  https://github.com/5-bare-bones/5bb__sphinx
     description: Cross-platform CLI password manager with sessions
     license: Apache 2.0
 
@@ -74,6 +74,6 @@ nfpms:
     - deb
   maintainer: GGP1
   description: Cross-platform CLI password manager with sessions
-  homepage: https://github.com/GGP1/kure
+  homepage: https://github.com/5-bare-bones/5bb__sphinx
   license: Apache 2.0
   file_name_template: '{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'

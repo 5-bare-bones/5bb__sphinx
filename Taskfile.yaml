@@ -1,0 +1,262 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+# Taskfile.yaml — build & test tasks for Sphinx
+# Docs: https://taskfile.dev/docs/reference/schema
+version: "3"
+silent: false
+
+vars:
+  BINARY: sphinx
+  VERSION: 2026.1.0
+  PROJECT_NAME: Grimm/Sphinx
+  SOURCE_DIR: .
+  # Package whose vars are stamped into the binary via -ldflags -X.
+  BUILDINFO: github.com/5-bare-bones/5bb__sphinx/internal/buildinfo
+  # Cumulative build tags per tier (tier 6/7 layer onto the master base).
+  TAGS_ADEPT: adept
+  TAGS_SCHOLAR: adept scholar
+  TAGS_KEEPER: adept scholar keeper
+  TAGS_MASTER: adept scholar keeper master
+  TAGS_DEV: adept scholar keeper master dev
+  TAGS_TUTOR: adept scholar keeper master tutor
+  TAGS_FULL: adept scholar keeper master dev tutor
+
+env:
+  # Base64 Ed25519 public key for ascend verification; override per build.
+  SPHINX_PUBKEY: ""
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.PROJECT_NAME}} {{.VERSION}}"
+      - task --list
+    silent: true
+
+  init:
+    desc: all initializations and setup tasks
+    cmds:
+      - echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
+      - echo 'restart the shell or run source ~/.zshrc'
+
+  tidy:
+    desc: Resolve and download dependencies (go + python)
+    dir: ./{{.SOURCE_DIR}}
+    cmds:
+      - echo "Initializing the project..."
+      - go mod tidy
+      - uv sync
+
+  # --- Build -----------------------------------------------------------------
+
+  build:
+    desc: Build the default (apprentice) dev binary into ./bin
+    dir: ./{{.SOURCE_DIR}}
+    preconditions:
+      - sh: test -f main.go
+        msg: did not find `main.go` in ./{{.SOURCE_DIR}}
+    cmds:
+      - echo "Building {{.BINARY}}..."
+      - go build -o bin/{{.BINARY}} -ldflags="-s -w" .
+
+  install:
+    desc: Install the binary onto your PATH (go bin dir)
+    dir: ./{{.SOURCE_DIR}}
+    cmds:
+      - go install -ldflags="-s -w" .
+
+  run:
+    desc: "Run without building — usage: task run -- gen -l 16"
+    dir: ./{{.SOURCE_DIR}}
+    cmds:
+      - go run . {{.CLI_ARGS}}
+
+  # Internal: build one tier binary into ./bin.
+  # Vars: NAME (output suffix), STAMP (tier name for buildinfo), TAGS.
+  _build:tier:
+    internal: true
+    cmds:
+      - >-
+        go build -tags '{{.TAGS}}'
+        -ldflags "-s -w
+        -X {{.BUILDINFO}}.Version={{.VERSION}}
+        -X {{.BUILDINFO}}.Tier={{.STAMP}}
+        -X {{.BUILDINFO}}.PubKeyB64=$SPHINX_PUBKEY"
+        -o bin/sphinx_{{.NAME}} .
+
+  build:apprentice:
+    desc: Build the apprentice (tier 1, default) binary
+    cmds: [{ task: "_build:tier", vars: { NAME: apprentice, STAMP: apprentice, TAGS: "" } }]
+  build:adept:
+    desc: Build the adept (tier 2) binary
+    cmds: [{ task: "_build:tier", vars: { NAME: adept, STAMP: adept, TAGS: "{{.TAGS_ADEPT}}" } }]
+  build:scholar:
+    desc: Build the scholar (tier 3) binary
+    cmds: [{ task: "_build:tier", vars: { NAME: scholar, STAMP: scholar, TAGS: "{{.TAGS_SCHOLAR}}" } }]
+  build:keeper:
+    desc: Build the keeper (tier 4) binary
+    cmds: [{ task: "_build:tier", vars: { NAME: keeper, STAMP: keeper, TAGS: "{{.TAGS_KEEPER}}" } }]
+  build:master:
+    desc: Build the master (tier 5) binary
+    cmds: [{ task: "_build:tier", vars: { NAME: master, STAMP: master, TAGS: "{{.TAGS_MASTER}}" } }]
+  build:hero:
+    desc: Build the hero/dev (tier 6) binary
+    cmds: [{ task: "_build:tier", vars: { NAME: dev, STAMP: hero, TAGS: "{{.TAGS_DEV}}" } }]
+  build:tutor:
+    desc: Build the tutor (tier 7) binary
+    cmds: [{ task: "_build:tier", vars: { NAME: tutor, STAMP: tutor, TAGS: "{{.TAGS_TUTOR}}" } }]
+  build:full:
+    desc: Build with every tag (used by the full feature suite)
+    cmds: [{ task: "_build:tier", vars: { NAME: full, STAMP: tutor, TAGS: "{{.TAGS_FULL}}" } }]
+
+  build:all:
+    desc: Build every tier binary into ./bin
+    cmds:
+      - task: build:apprentice # level 1
+      - task: build:adept # level 2
+      - task: build:scholar # level 3
+      - task: build:keeper # level 4
+      - task: build:master # level 5
+      - task: build:hero # level 6
+      - task: build:tutor # level 7
+
+  # --- Quality ---------------------------------------------------------------
+
+  fmt:
+    desc: Format the code
+    cmds: [gofmt -w .]
+
+  vet:
+    desc: Run go vet
+    cmds: [go vet ./...]
+
+  check:
+    desc: Format, vet, and build
+    cmds:
+      - task: fmt
+      - task: vet
+      - task: build
+
+  verify-tiers:
+    desc: Assert lower tiers ship strictly less code than higher ones
+    cmds: [./scripts/verify_tiers.sh]
+
+  # --- Go tests --------------------------------------------------------------
+
+  test:go:
+    desc: Run Go unit tests (default build)
+    cmds: [go test ./...]
+
+  test:go:race:
+    desc: Run Go unit tests with the race detector
+    cmds: [go test ./... -race]
+
+  test:go:all-tags:
+    desc: Run Go unit tests with every build tag (exercises all tiers' packages)
+    cmds:
+      - go test -tags '{{.TAGS_FULL}}' ./... -race
+
+  # --- BDD / behave (CLI integration across tiers) ---------------------------
+
+  # Internal: run the behave suite against a built tier binary.
+  # Vars: NAME (binary suffix in ./bin), TAGS (behave tag expression).
+  _test:behave:
+    internal: true
+    dir: tests
+    env:
+      SPHINX_BIN: "{{.ROOT_DIR}}/bin/sphinx_{{.NAME}}"
+      PYTHONPATH: "{{.ROOT_DIR}}/tests"
+    cmds:
+      - uv run behave --tags='{{.TAGS}}' --no-capture
+
+  test:behave:
+    desc: Run the full feature suite against an all-tier binary
+    deps: [build:full]
+    cmds: [{ task: "_test:behave", vars: { NAME: full, TAGS: "~@gating" } }]
+
+  test:behave:apprentice:
+    desc: Run apprentice-tier features against the apprentice binary
+    deps: [build:apprentice]
+    cmds: [{ task: "_test:behave", vars: { NAME: apprentice, TAGS: "@apprentice" } }]
+  test:behave:adept:
+    desc: Run adept-tier (cumulative) features against the adept binary
+    deps: [build:adept]
+    cmds: [{ task: "_test:behave", vars: { NAME: adept, TAGS: "@apprentice,@adept" } }]
+  test:behave:scholar:
+    desc: Run scholar-tier (cumulative) features against the scholar binary
+    deps: [build:scholar]
+    cmds: [{ task: "_test:behave", vars: { NAME: scholar, TAGS: "@apprentice,@adept,@scholar" } }]
+  test:behave:keeper:
+    desc: Run keeper-tier (cumulative) features against the keeper binary
+    deps: [build:keeper]
+    cmds: [{ task: "_test:behave", vars: { NAME: keeper, TAGS: "@apprentice,@adept,@scholar,@keeper" } }]
+  test:behave:master:
+    desc: Run master-tier (cumulative) features against the master binary
+    deps: [build:master]
+    cmds: [{ task: "_test:behave", vars: { NAME: master, TAGS: "@apprentice,@adept,@scholar,@keeper,@master" } }]
+  test:behave:hero:
+    desc: Run hero/dev-tier (cumulative) features against the dev binary
+    deps: [build:dev]
+    cmds: [{ task: "_test:behave", vars: { NAME: dev, TAGS: "@apprentice,@adept,@scholar,@keeper,@master,@hero" } }]
+  test:behave:tutor:
+    desc: Run tutor-tier features against the tutor binary
+    deps: [build:tutor]
+    cmds: [{ task: "_test:behave", vars: { NAME: tutor, TAGS: "@apprentice,@adept,@scholar,@keeper,@master,@tutor" } }]
+
+  test:behave:gating:
+    desc: Verify higher-tier commands are absent from the apprentice binary
+    deps: [build:apprentice]
+    cmds: [{ task: "_test:behave", vars: { NAME: apprentice, TAGS: "@gating" } }]
+
+  test:behave:tiers:
+    desc: Run every tier's features against its own binary, then gating
+    cmds:
+      - task: test:behave:apprentice
+      - task: test:behave:adept
+      - task: test:behave:scholar
+      - task: test:behave:keeper
+      - task: test:behave:master
+      - task: test:behave:hero
+      - task: test:behave:tutor
+      - task: test:behave:gating
+
+  test:pytest:
+    desc: Run the pytest suite (scaphoid harness unit tests)
+    cmds: [uv run pytest]
+
+  test:
+    desc: Run everything — Go tests, the full feature suite, gating, and pytest
+    cmds:
+      - task: test:go
+      - task: test:behave
+      - task: test:behave:gating
+      - task: test:pytest
+
+  # --- Misc tooling (mirrors the Makefile) -----------------------------------
+
+  proto:
+    desc: Regenerate protobuf Go code
+    dir: pb
+    cmds:
+      - for: [card, entry, file, totp]
+        cmd: protoc -I. --go_out=. {{.ITEM}}.proto
+
+  docs:cmds:
+    desc: Regenerate command docs
+    dir: docs
+    cmds:
+      - go build main.go
+      - ./main --cmd all
+
+  docs:summary:
+    desc: Regenerate the command summary
+    dir: docs
+    cmds:
+      - go build main.go
+      - ./main --summary
+
+  docker:build:
+    desc: Build the docker image
+    cmds: [docker build -t sphinx .]
+
+  docker:run:
+    desc: Run a shell in the docker image
+    cmds: [docker run -it --rm sphinx sh]

@@ -11,7 +11,7 @@ Use the `[-i info]` flag to display information about the setup key, it also gen
 ## Subcommands
 
 - [`sphinx topt add`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/topt/subcommands/add.md): Add a two-factor authentication code.
-- [`sphinx topt rm`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/topt/subcommands/rm.md): Remove two-factor authentication codes from the database.
+- [`sphinx topt del`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/topt/subcommands/del.md): Remove two-factor authentication codes from the database.
 
 ## Flags
 

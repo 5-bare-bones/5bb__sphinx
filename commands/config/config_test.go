@@ -3,8 +3,8 @@ package config
 import (
 	"testing"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/config"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/config"
 
 	"github.com/stretchr/testify/assert"
 )

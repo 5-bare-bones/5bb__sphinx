@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx topt rm <names>`
+`sphinx topt del <names>`
 
 ## Description
 
@@ -14,15 +14,15 @@ No flags.
 
 Remove a topt code:
 ```
-sphinx topt rm Sample
+sphinx topt del Sample
 ```
 
 Remove a directory:
 ```
-sphinx topt rm SampleDir/
+sphinx topt del SampleDir/
 ```
 
 Remove multiple topt codes:
 ```
-sphinx topt rm Sample Sample2 Sample3
+sphinx topt del Sample Sample2 Sample3
 ```

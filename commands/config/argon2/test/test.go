@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
 
 	"github.com/GGP1/atoll"
 
@@ -16,7 +16,7 @@ import (
 )
 
 const example = `
-kure config argon2 test -m 500000 -i 2 -t 4`
+sphinx config argon2 test -m 500000 -i 2 -t 4`
 
 type testOptions struct {
 	memory, iterations uint32
@@ -30,7 +30,7 @@ func NewCmd() *cobra.Command {
 		Use:   "test",
 		Short: "Test argon2 performance",
 		Long: `Test the time taken by argon2 to derive the key with the parameters passed.
-		
+
 The Argon2id variant with 1 iteration and maximum available memory is recommended as a default setting for all environments. This setting is secure against side-channel attacks and maximizes adversarial costs on dedicated bruteforce hardware.
 
 If one of the devices that will handle the database has lower than 1GB of memory, we recommend setting the memory according to that device's RAM availability.
@@ -60,7 +60,7 @@ If one of the devices that will handle the database has lower than 1GB of memory
 	return cmd
 }
 
-func runTest(opts *testOptions) cmdutil.RunEFunc {
+func runTest(opts *testOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.iterations < 1 || opts.memory < 1 {
 			return errors.New("iterations and memory should be higher than 0")

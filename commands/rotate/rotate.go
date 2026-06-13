@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 	"github.com/GGP1/atoll"
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/terminal"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -17,10 +17,10 @@ import (
 
 const example = `
 * Rotate a password by generating a random one that uses the same parameters
-kure rotate Sample
+sphinx rotate Sample
 
 * Rotate a password using a new custom one
-kure rotate Sample -c`
+sphinx rotate Sample -c`
 
 type rotateOptions struct {
 	copy, custom bool
@@ -50,7 +50,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runRotate(db *bolt.DB, opts *rotateOptions) cmdutil.RunEFunc {
+func runRotate(db *bolt.DB, opts *rotateOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)

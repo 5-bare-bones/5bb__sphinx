@@ -12,14 +12,14 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/commands/2fa/add"
-	"github.com/GGP1/kure/commands/2fa/rm"
-	"github.com/GGP1/kure/db/totp"
-	"github.com/GGP1/kure/orderedmap"
-	"github.com/GGP1/kure/pb"
-	"github.com/GGP1/kure/terminal"
-	"github.com/GGP1/kure/tree"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/commands/topt/add"
+	"github.com/5-bare-bones/5bb__sphinx/commands/topt/del"
+	"github.com/5-bare-bones/5bb__sphinx/db/totp"
+	"github.com/5-bare-bones/5bb__sphinx/orderedmap"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/tree"
 	"github.com/pkg/errors"
 
 	"github.com/spf13/cobra"
@@ -28,34 +28,35 @@ import (
 
 const example = `
 * List one and copy to the clipboard
-kure 2fa Sample -c
+sphinx topt Sample -c
 
 * List all
-kure 2fa
+sphinx topt
 
 * Display information about the setup key
-kure 2fa Sample -i`
+sphinx topt Sample -i`
 
-type tfaOptions struct {
+type toptOptions struct {
 	copy, info bool
 	timeout    time.Duration
 }
 
 // NewCmd returns a new command.
 func NewCmd(db *bolt.DB) *cobra.Command {
-	opts := tfaOptions{}
+	opts := toptOptions{}
 	cmd := &cobra.Command{
-		Use:   "2fa <name>",
-		Short: "List two-factor authentication codes",
+		Use:     "topt <name>",
+		Aliases: []string{"2fa"},
+		Short:   "List two-factor authentication codes",
 		Long: `List two-factor authentication codes.
 
 Use the [-i info] flag to display information about the setup key, it also generates a QR code with the key in URL format that can be scanned by any authenticator.`,
 		Example: example,
-		Args:    cmdutil.MustExistLs(db, cmdutil.TOTP),
-		RunE:    run2FA(db, &opts),
+		Args:    cmdutil.MustExistList(db, cmdutil.TOTP),
+		RunE:    runTOPT(db, &opts),
 	}
 
-	cmd.AddCommand(add.NewCmd(db, os.Stdin), rm.NewCmd(db, os.Stdin))
+	cmd.AddCommand(add.NewCmd(db, os.Stdin), del.NewCmd(db, os.Stdin))
 
 	f := cmd.Flags()
 	f.BoolVarP(&opts.copy, "copy", "c", false, "copy code to clipboard")
@@ -64,14 +65,14 @@ Use the [-i info] flag to display information about the setup key, it also gener
 
 	cmd.PostRun = func(cmd *cobra.Command, args []string) {
 		// Reset variables (session)
-		opts = tfaOptions{}
+		opts = toptOptions{}
 		f.Lookup("timeout").Changed = false
 	}
 
 	return cmd
 }
 
-func run2FA(db *bolt.DB, opts *tfaOptions) cmdutil.RunEFunc {
+func runTOPT(db *bolt.DB, opts *toptOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)
@@ -88,7 +89,7 @@ func run2FA(db *bolt.DB, opts *tfaOptions) cmdutil.RunEFunc {
 
 		t, err := totp.Get(db, name)
 		if err != nil {
-			return errors.Wrap(err, "2fa")
+			return errors.Wrap(err, "topt")
 		}
 
 		if opts.info {

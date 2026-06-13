@@ -3,7 +3,7 @@ package stats
 import (
 	"testing"
 
-	cmdutil "github.com/GGP1/kure/commands"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
 
 	"github.com/stretchr/testify/assert"
 )

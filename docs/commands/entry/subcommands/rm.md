@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx file rm <names>`
+`sphinx file del <names>`
 
 ## Description
 
@@ -15,15 +15,15 @@ No flags.
 
 Remove a file:
 ```
-sphinx file rm example
+sphinx file del example
 ```
 
 Remove a directory:
 ``` 
-sphinx file rm books/
+sphinx file del books/
 ```
 
 Remove multiple files:
 ```
-sphinx file rm Sample Sample2 Sample3
+sphinx file del Sample Sample2 Sample3
 ```

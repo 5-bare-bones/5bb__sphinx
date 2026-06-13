@@ -8,10 +8,10 @@ import (
 	"net/url"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/totp"
-	"github.com/GGP1/kure/pb"
-	"github.com/GGP1/kure/terminal"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/totp"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -20,10 +20,10 @@ import (
 
 const example = `
 * Add with setup key
-kure 2fa add Sample
+sphinx topt add Sample
 
 * Add with URL
-kure 2fa add -u`
+sphinx topt add -u`
 
 type addOptions struct {
 	digits int32
@@ -65,7 +65,7 @@ func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
 	return cmd
 }
 
-func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunEFunc {
+func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)
@@ -83,7 +83,7 @@ func addWithKey(db *bolt.DB, r io.Reader, name string, digits int32) error {
 		return errors.Errorf("invalid digits number [%d], it must be either 6, 7 or 8", digits)
 	}
 
-	key := terminal.Scanln(bufio.NewReader(r), "Key")
+	key := terminal.ScanOneLine(bufio.NewReader(r), "Key")
 	// Adjust key
 	key = strings.ReplaceAll(key, " ", "")
 	key += strings.Repeat("=", -len(key)&7)
@@ -98,7 +98,7 @@ func addWithKey(db *bolt.DB, r io.Reader, name string, digits int32) error {
 
 // addWithURL creates a new TOTP using the values passed in the url.
 func addWithURL(db *bolt.DB, r io.Reader) error {
-	uri := terminal.Scanln(bufio.NewReader(r), "URL")
+	uri := terminal.ScanOneLine(bufio.NewReader(r), "URL")
 	URL, err := url.Parse(uri)
 	if err != nil {
 		return errors.Wrap(err, "parsing url")

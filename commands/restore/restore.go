@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/GGP1/kure/auth"
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/crypt"
-	dbutil "github.com/GGP1/kure/db"
-	"github.com/GGP1/kure/db/bucket"
-	"github.com/GGP1/kure/sig"
+	"github.com/5-bare-bones/5bb__sphinx/auth"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/crypt"
+	dbutil "github.com/5-bare-bones/5bb__sphinx/db"
+	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -30,7 +30,7 @@ WARNING: this command is computationally expensive, it may cause memory (OOM) an
 	}
 }
 
-func runRestore(db *bolt.DB) cmdutil.RunEFunc {
+func runRestore(db *bolt.DB) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		buckets := bucket.GetNames()
 		logs := make([]*log, 0, len(buckets))

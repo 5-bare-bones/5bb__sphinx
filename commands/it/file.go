@@ -3,7 +3,7 @@ package it
 import (
 	"fmt"
 
-	"github.com/GGP1/kure/db/file"
+	"github.com/5-bare-bones/5bb__sphinx/db/file"
 
 	"github.com/AlecAivazis/survey/v2"
 	bolt "go.etcd.io/bbolt"

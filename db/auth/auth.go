@@ -3,8 +3,8 @@ package auth
 import (
 	"encoding/binary"
 
-	"github.com/GGP1/kure/crypt"
-	"github.com/GGP1/kure/db/bucket"
+	"github.com/5-bare-bones/5bb__sphinx/crypt"
+	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
 
 	"github.com/pkg/errors"
 	bolt "go.etcd.io/bbolt"

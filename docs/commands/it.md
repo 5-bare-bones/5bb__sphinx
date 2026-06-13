@@ -26,12 +26,12 @@ sphinx it
 
 Command without flags:
 ```
-sphinx it ls
+sphinx it list
 ```
 
 Command with flags:
 ```
-sphinx it ls -s -q
+sphinx it list -s -q
 ```
 
 Only the name:

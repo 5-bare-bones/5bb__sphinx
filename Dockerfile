@@ -18,6 +18,6 @@ FROM alpine:3.22
 
 RUN apk add --update --no-cache vim
 
-COPY --from=builder /go/bin/kure /usr/bin/
+COPY --from=builder /go/bin/sphinx /usr/bin/
 
 CMD ["/usr/bin/kure"]

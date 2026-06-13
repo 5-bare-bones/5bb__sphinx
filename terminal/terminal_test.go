@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/GGP1/kure/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -71,7 +71,7 @@ func TestScanln(t *testing.T) {
 			buf := bytes.NewBufferString(tc.input)
 			r := bufio.NewReader(buf)
 
-			got := terminal.Scanln(r, "test")
+			got := terminal.ScanOneLine(r, "test")
 			assert.Equal(t, tc.expected, got)
 		})
 	}
@@ -92,7 +92,7 @@ func TestScanlns(t *testing.T) {
 			buf := bytes.NewBufferString(tc.input)
 			r := bufio.NewReader(buf)
 
-			got := terminal.Scanlns(r, "test")
+			got := terminal.ScanMultipleLines(r, "test")
 			assert.Equal(t, tc.expected, got)
 		})
 	}

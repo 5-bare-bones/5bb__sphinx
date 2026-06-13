@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/crypt"
-	"github.com/GGP1/kure/db/auth"
-	authDB "github.com/GGP1/kure/db/auth"
-	"github.com/GGP1/kure/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/crypt"
+	"github.com/5-bare-bones/5bb__sphinx/db/auth"
+	authDB "github.com/5-bare-bones/5bb__sphinx/db/auth"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/awnumar/memguard"
 	"github.com/pkg/errors"
@@ -116,7 +116,7 @@ func Register(db *bolt.DB, r io.Reader) error {
 
 func askArgon2Params(r io.Reader) (authDB.Argon2, error) {
 	fmt.Println("Set argon2 parameters, leave blank to use the default value")
-	fmt.Println("For more information visit https://github.com/GGP1/kure/wiki/Authentication")
+	fmt.Println("For more information visit https://github.com/5-bare-bones/5bb__sphinx/wiki/Authentication")
 
 	reader := bufio.NewReader(r)
 
@@ -161,7 +161,7 @@ func askKeyfile(r io.Reader) (bool, error) {
 func combineKeys(r io.Reader, password *memguard.Enclave) (*memguard.Enclave, error) {
 	path := config.GetString(keyfilePath)
 	if path == "" {
-		path = terminal.Scanln(bufio.NewReader(r), "Enter key file path")
+		path = terminal.ScanOneLine(bufio.NewReader(r), "Enter key file path")
 		path = strings.Trim(path, "\"")
 		if path == "" || path == "." {
 			return nil, errors.New("invalid key file path")
@@ -192,7 +192,7 @@ func combineKeys(r io.Reader, password *memguard.Enclave) (*memguard.Enclave, er
 }
 
 func scanParameter(r *bufio.Reader, field string, defaultValue uint32) (uint32, error) {
-	valueStr := terminal.Scanln(r, " "+field)
+	valueStr := terminal.ScanOneLine(r, " "+field)
 	if valueStr == "" {
 		return defaultValue, nil
 	}

@@ -9,11 +9,11 @@ import (
 	"os/exec"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/card"
-	"github.com/GGP1/kure/pb"
-	"github.com/GGP1/kure/sig"
-	"github.com/GGP1/kure/terminal"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/card"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -22,10 +22,10 @@ import (
 
 const example = `
 * Edit using the standard input
-kure card edit Sample
+sphinx card edit Sample
 
 * Edit using the text editor
-kure card edit Sample -i`
+sphinx card edit Sample -i`
 
 type editOptions struct {
 	interactive bool
@@ -39,7 +39,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 		Short: "Edit a card",
 		Long: `Edit a card.
 
-If the name is edited, kure will remove the old card and create one with the new name.`,
+If the name is edited, sphinx will remove the old card and create one with the new name.`,
 		Example: example,
 		Args:    cmdutil.MustExist(db, cmdutil.Card),
 		RunE:    runEdit(db, &opts),
@@ -54,7 +54,7 @@ If the name is edited, kure will remove the old card and create one with the new
 	return cmd
 }
 
-func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunEFunc {
+func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)
@@ -134,7 +134,7 @@ func useStdin(db *bolt.DB, r io.Reader, oldCard *pb.Card) error {
 	reader := bufio.NewReader(r)
 
 	scanln := func(field, value string) string {
-		input := terminal.Scanln(reader, fmt.Sprintf("%s [%s]", field, value))
+		input := terminal.ScanOneLine(reader, fmt.Sprintf("%s [%s]", field, value))
 		if input == "-" {
 			return ""
 		} else if input != "" {
@@ -151,7 +151,7 @@ func useStdin(db *bolt.DB, r io.Reader, oldCard *pb.Card) error {
 		ExpireDate:   scanln("Expire date", oldCard.ExpireDate),
 	}
 
-	notes := terminal.Scanlns(reader, fmt.Sprintf("Notes [%s]", oldCard.Notes))
+	notes := terminal.ScanMultipleLines(reader, fmt.Sprintf("Notes [%s]", oldCard.Notes))
 	if notes == "" {
 		notes = oldCard.Notes
 	} else if notes == "-" {

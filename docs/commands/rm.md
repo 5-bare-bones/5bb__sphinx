@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx rm <names>`
+`sphinx del <names>`
 
 ## Description
 
@@ -14,15 +14,15 @@ No flags.
 
 Remove an entry:
 ```
-sphinx rm Sample
+sphinx del Sample
 ```
 
 Remove a directory:
 ```
-sphinx rm SampleDir/
+sphinx del SampleDir/
 ```
 
 Remove multiple entries:
 ```
-sphinx rm Sample Sample2 Sample3
+sphinx del Sample Sample2 Sample3
 ```

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/GGP1/kure/config"
+	"github.com/5-bare-bones/5bb__sphinx/config"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -21,7 +21,7 @@ func TestExecute(t *testing.T) {
 	}{
 		{
 			desc: "Root command",
-			args: [][]string{{"kure", "stats"}},
+			args: [][]string{{"sphinx", "stats"}},
 		},
 		{
 			desc: "Session command",
@@ -29,7 +29,7 @@ func TestExecute(t *testing.T) {
 		},
 		{
 			desc: "Help command",
-			args: [][]string{{"kure"}},
+			args: [][]string{{"sphinx"}},
 		},
 		{
 			desc: "No command",

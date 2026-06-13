@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx card rm <names>`
+`sphinx card del <names>`
 
 ## Description
 
@@ -14,15 +14,15 @@ No flags.
 
 Remove a card:
 ```
-sphinx card rm Sample
+sphinx card del Sample
 ```
 
 Remove a directory:
 ```
-sphinx card rm SampleDir/
+sphinx card del SampleDir/
 ```
 
 Remove multiple cards:
 ```
-sphinx card rm Sample Sample2 Sample3
+sphinx card del Sample Sample2 Sample3
 ```

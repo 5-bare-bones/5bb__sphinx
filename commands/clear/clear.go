@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
 
 	"github.com/atotto/clipboard"
 	"github.com/pkg/errors"
@@ -17,16 +17,16 @@ import (
 
 const example = `
 * Clear terminal and clipboard
-kure clear
+sphinx clear
 
 * Clear clipboard
-kure clear -c
+sphinx clear -c
 
 * Clear terminal screen
-kure clear -t
+sphinx clear -t
 
-* Clear kure commands from terminal history
-kure clear -H`
+* Clear sphinx commands from terminal history
+sphinx clear -H`
 
 type clearOptions struct {
 	clip, term, hist bool
@@ -39,7 +39,7 @@ func NewCmd() *cobra.Command {
 		Use:   "clear",
 		Short: "Clear clipboard, terminal screen or history",
 		Long: `Clear clipboard, terminal screen or history.
-		
+
 Using the command without passing any flags clears the clipboard and the terminal screen.`,
 		Example: example,
 		RunE:    runClear(&opts),
@@ -52,12 +52,12 @@ Using the command without passing any flags clears the clipboard and the termina
 	f := cmd.Flags()
 	f.BoolVarP(&opts.clip, "clipboard", "c", false, "clear clipboard")
 	f.BoolVarP(&opts.term, "terminal", "t", false, "clear terminal screen")
-	f.BoolVarP(&opts.hist, "history", "H", false, "remove kure commands from terminal history")
+	f.BoolVarP(&opts.hist, "history", "H", false, "remove sphinx commands from terminal history")
 
 	return cmd
 }
 
-func runClear(opts *clearOptions) cmdutil.RunEFunc {
+func runClear(opts *clearOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		// If no flags were specified, clear clipboard and terminal
 		if !opts.clip && !opts.term && !opts.hist {
@@ -140,7 +140,7 @@ func clearHistoryFile(path string) error {
 
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		if bytes.HasPrefix(bytes.TrimSpace(line), []byte("kure ")) {
+		if bytes.HasPrefix(bytes.TrimSpace(line), []byte("sphinx ")) {
 			continue
 		}
 		buf.Write(line)

@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/GGP1/kure/pb"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"

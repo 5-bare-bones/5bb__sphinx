@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"testing"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/pb"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
 
 	"github.com/stretchr/testify/assert"
 	bolt "go.etcd.io/bbolt"
@@ -120,7 +120,7 @@ func TestUpdateEntry(t *testing.T) {
 		Name:     newName,
 		Username: "test",
 		Password: "q8rvq63r/q",
-		URL:      "https://www.github.com/GGP1/kure",
+		URL:      "https://www.github.com/5-bare-bones/5bb__sphinx",
 		Expires:  "02/12/2023",
 		Notes:    "",
 	}

@@ -1,6 +1,6 @@
-kure ls
+sphinx list
 test
 clear
-kure add -l 20 Service
+sphinx add -l 20 Service
 history
- kure session
+ sphinx session

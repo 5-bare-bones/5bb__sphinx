@@ -1,4 +1,4 @@
-module github.com/GGP1/kure
+module github.com/5-bare-bones/5bb__sphinx
 
 go 1.25.0
 

@@ -3,11 +3,11 @@ package entry
 import (
 	"testing"
 
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/crypt"
-	dbutil "github.com/GGP1/kure/db"
-	"github.com/GGP1/kure/db/bucket"
-	"github.com/GGP1/kure/pb"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/crypt"
+	dbutil "github.com/5-bare-bones/5bb__sphinx/db"
+	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
 
 	"github.com/awnumar/memguard"
 	"github.com/stretchr/testify/assert"

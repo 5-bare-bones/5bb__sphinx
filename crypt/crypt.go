@@ -5,7 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 
-	"github.com/GGP1/kure/config"
+	"github.com/5-bare-bones/5bb__sphinx/config"
 
 	"github.com/awnumar/memguard"
 	"github.com/pkg/errors"

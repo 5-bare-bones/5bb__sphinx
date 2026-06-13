@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/crypt"
-	"github.com/GGP1/kure/db/bucket"
-	"github.com/GGP1/kure/pb"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/crypt"
+	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
 
 	"github.com/awnumar/memguard"
 	"github.com/pkg/errors"
@@ -21,7 +21,7 @@ import (
 
 const nullChar = string('\x00')
 
-// Record is an interface that all kure objects implement.
+// Record is an interface that all sphinx objects implement.
 type Record interface {
 	GetName() string
 	proto.Message

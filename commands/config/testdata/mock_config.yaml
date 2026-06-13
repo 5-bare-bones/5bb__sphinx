@@ -4,4 +4,4 @@ database:
 editor: vim
 
 session:
-  prefix: kure >
+  prefix: sphinx >

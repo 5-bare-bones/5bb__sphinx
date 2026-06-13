@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/pb"
-	"github.com/GGP1/kure/sig"
-	"github.com/GGP1/kure/terminal"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -23,10 +23,10 @@ import (
 
 const example = `
 * Edit using the standard input
-kure edit Sample
+sphinx edit Sample
 
 * Edit using the text editor
-kure edit Sample -i`
+sphinx edit Sample -i`
 
 type editOptions struct {
 	interactive bool
@@ -38,9 +38,9 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "edit <name>",
 		Short: "Edit an entry",
-		Long: `Edit an entry. 
-		
-If the name is edited, kure will remove the entry with the old name and create one with the new name.`,
+		Long: `Edit an entry.
+
+If the name is edited, sphinx will remove the entry with the old name and create one with the new name.`,
 		Example: example,
 		Args:    cmdutil.MustExist(db, cmdutil.Entry),
 		RunE:    runEdit(db, &opts),
@@ -55,7 +55,7 @@ If the name is edited, kure will remove the entry with the old name and create o
 	return cmd
 }
 
-func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunEFunc {
+func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)
@@ -127,7 +127,7 @@ func updateEntry(db *bolt.DB, name string, e *pb.Entry) error {
 	}
 
 	// Verify that the "expires" field has a valid format
-	expires, err := cmdutil.FmtExpires(e.Expires)
+	expires, err := cmdutil.FormatExpires(e.Expires)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func useStdin(db *bolt.DB, r io.Reader, oldEntry *pb.Entry) error {
 	reader := bufio.NewReader(r)
 
 	scanln := func(field, value string) string {
-		input := terminal.Scanln(reader, fmt.Sprintf("%s [%s]", field, value))
+		input := terminal.ScanOneLine(reader, fmt.Sprintf("%s [%s]", field, value))
 		if input == "-" {
 			return ""
 		} else if input != "" {
@@ -182,7 +182,7 @@ func useStdin(db *bolt.DB, r io.Reader, oldEntry *pb.Entry) error {
 	newEntry.URL = scanln("URL", oldEntry.URL)
 	newEntry.Expires = scanln("Expires", oldEntry.Expires)
 
-	notes := terminal.Scanlns(reader, fmt.Sprintf("Notes [%s]", oldEntry.Notes))
+	notes := terminal.ScanMultipleLines(reader, fmt.Sprintf("Notes [%s]", oldEntry.Notes))
 	if notes == "" {
 		notes = oldEntry.Notes
 	} else if notes == "-" {

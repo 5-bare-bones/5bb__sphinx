@@ -9,15 +9,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/db/bucket"
-	"github.com/GGP1/kure/db/card"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/db/file"
-	"github.com/GGP1/kure/db/totp"
-	"github.com/GGP1/kure/orderedmap"
-	"github.com/GGP1/kure/sig"
-	"github.com/GGP1/kure/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
+	"github.com/5-bare-bones/5bb__sphinx/db/card"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	"github.com/5-bare-bones/5bb__sphinx/db/totp"
+	"github.com/5-bare-bones/5bb__sphinx/orderedmap"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/atotto/clipboard"
 	"github.com/awnumar/memguard"
@@ -55,8 +55,8 @@ const (
 	lowerRight = "╯"
 )
 
-// RunEFunc runs a cobra function returning an error.
-type RunEFunc func(cmd *cobra.Command, args []string) error
+// RunErrorFunction runs a cobra function returning an error.
+type RunErrorFunction func(cmd *cobra.Command, args []string) error
 
 type object int
 
@@ -209,16 +209,15 @@ func Exists(db *bolt.DB, name string, obj object) error {
 	return exists(records, name, objType)
 }
 
-// FmtExpires returns expires formatted.
-func FmtExpires(expires string) (string, error) {
+// FormatExpires returns expires formatted.
+func FormatExpires(expires string) (string, error) {
 	switch strings.ToLower(expires) {
 	case "never", "", " ", "0", "0s":
 		return "Never", nil
 
 	default:
-		expires = strings.ReplaceAll(expires, "-", "/")
+		// TODO: use iso date only
 
-		// If the first format fails, try the second
 		exp, err := time.Parse("02/01/2006", expires)
 		if err != nil {
 			exp, err = time.Parse("2006/01/02", expires)
@@ -283,9 +282,9 @@ func MustExist(db *bolt.DB, obj object, allowDir ...bool) cobra.PositionalArgs {
 	}
 }
 
-// MustExistLs is like MustExist but it doesn't fail if
+// MustExistList is like MustExist but it doesn't fail if
 // there are no arguments or if the user is using the filter flag.
-func MustExistLs(db *bolt.DB, obj object) cobra.PositionalArgs {
+func MustExistList(db *bolt.DB, obj object) cobra.PositionalArgs {
 	return func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 || cmd.Flags().Changed("filter") {
 			return nil

@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx file cat <name> [-c copy]`
+`sphinx file show <name> [-c copy]`
 
 ## Description
 
@@ -18,15 +18,15 @@ TODO: change docs to fit entry OR deleteß
 
 Write one file:
 ```
-sphinx cat fileName
+sphinx show fileName
 ```
 
 Write one file and copy content to the clipboard:
 ```
-sphinx cat fileName -c
+sphinx show fileName -c
 ```
 
 Write multiple files:
 ```
-sphinx cat file1 file2 file3
+sphinx show file1 file2 file3
 ```

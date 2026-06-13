@@ -19,3 +19,17 @@ dist
 kure_dev
 kure.yaml
 kure.db
+
+# sphinx dev + per-tier build artifacts (make build / build-all / build-<tier>)
+sphinx_dev
+sphinx_dev_hero
+sphinx_tutor
+sphinx_apprentice
+sphinx_adept
+sphinx_scholar
+sphinx_keeper
+sphinx_master
+sphinx.yaml
+sphinx.db
+# Task build output
+bin/

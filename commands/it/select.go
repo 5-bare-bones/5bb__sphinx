@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/GGP1/kure/db/card"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/db/file"
-	"github.com/GGP1/kure/db/totp"
+	"github.com/5-bare-bones/5bb__sphinx/db/card"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	"github.com/5-bare-bones/5bb__sphinx/db/totp"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/pkg/errors"
@@ -90,7 +90,7 @@ func selectName(db *bolt.DB, commands []string) (string, error) {
 	)
 
 	switch commands[0] {
-	case "2fa":
+	case "topt":
 		list, err = totp.ListNames(db)
 		message = "Choose a TOTP:"
 
@@ -100,7 +100,7 @@ func selectName(db *bolt.DB, commands []string) (string, error) {
 	case "file":
 		list, err = file.ListNames(db)
 
-	case "ls", "copy", "edit", "rm":
+	case "list", "copy", "edit", "del":
 		list, err = entry.ListNames(db)
 		message = "Choose an entry:"
 	}
@@ -108,10 +108,10 @@ func selectName(db *bolt.DB, commands []string) (string, error) {
 		return "", err
 	}
 
-	// If any of the commands is "ls" or "2fa", add the "all" option
+	// If any of the commands is "list" or "topt", add the "all" option
 	// to list all the elements
 	for _, cmd := range commands {
-		if cmd == "ls" || cmd == "2fa" {
+		if cmd == "list" || cmd == "topt" {
 			list = append([]string{"all"}, list...)
 			break
 		}

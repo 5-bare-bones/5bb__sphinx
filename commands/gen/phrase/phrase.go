@@ -5,8 +5,8 @@ import (
 	"math"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/terminal"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/GGP1/atoll"
 
@@ -38,13 +38,13 @@ const (
 
 const example = `
 * Generate a random passphrase
-kure gen phrase -l 8 -L WordList -s &
+sphinx gen phrase -l 8 -L WordList -s &
 
 * Generate and show QR code
-kure gen phrase -l 5 -q
+sphinx gen phrase -l 5 -q
 
 * Generate, copy and mute standard output
-kure gen -l 7 -cm`
+sphinx gen -l 7 -cm`
 
 type phraseOptions struct {
 	list, separator string
@@ -60,7 +60,7 @@ func NewCmd() *cobra.Command {
 		Use:   "phrase",
 		Short: "Generate a random passphrase",
 		Long: `Generate a random passphrase.
-		
+
 Keyspace is the number of possible combinations of the passphrase.
 Average time taken to crack is based on a brute force attack scenario where the guesses per second is 1 trillion.`,
 		Aliases: []string{"passphrase"},
@@ -87,7 +87,7 @@ Average time taken to crack is based on a brute force attack scenario where the 
 	return cmd
 }
 
-func runPhrase(opts *phraseOptions) cmdutil.RunEFunc {
+func runPhrase(opts *phraseOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.length < 1 {
 			return cmdutil.ErrInvalidLength
@@ -139,7 +139,7 @@ func runPhrase(opts *phraseOptions) cmdutil.RunEFunc {
 
 		if !opts.mute || !opts.copy {
 			fmt.Printf(`Passphrase: %s
-	
+
 Entropy: %.2f bits
 Keyspace: %s
 Average time taken to crack: %s

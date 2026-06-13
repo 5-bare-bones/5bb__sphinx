@@ -6,10 +6,10 @@ import (
 	"io"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/card"
-	"github.com/GGP1/kure/pb"
-	"github.com/GGP1/kure/terminal"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/card"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -17,7 +17,7 @@ import (
 
 const example = `
 * Add a new card
-kure card add Sample`
+sphinx card add Sample`
 
 // NewCmd returns a new command.
 func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
@@ -31,7 +31,7 @@ func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
 	}
 }
 
-func runAdd(db *bolt.DB, r io.Reader) cmdutil.RunEFunc {
+func runAdd(db *bolt.DB, r io.Reader) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)
@@ -54,11 +54,11 @@ func input(db *bolt.DB, name string, r io.Reader) (*pb.Card, error) {
 	reader := bufio.NewReader(r)
 	c := &pb.Card{
 		Name:         name,
-		Type:         terminal.Scanln(reader, "Type"),
-		Number:       terminal.Scanln(reader, "Number"),
-		SecurityCode: terminal.Scanln(reader, "Security code"),
-		ExpireDate:   terminal.Scanln(reader, "Expire date"),
-		Notes:        terminal.Scanlns(reader, "Notes"),
+		Type:         terminal.ScanOneLine(reader, "Type"),
+		Number:       terminal.ScanOneLine(reader, "Number"),
+		SecurityCode: terminal.ScanOneLine(reader, "Security code"),
+		ExpireDate:   terminal.ScanOneLine(reader, "Expire date"),
+		Notes:        terminal.ScanMultipleLines(reader, "Notes"),
 	}
 
 	return c, nil

@@ -3,7 +3,7 @@ package root_test
 import (
 	"testing"
 
-	"github.com/GGP1/kure/commands/root"
+	"github.com/5-bare-bones/5bb__sphinx/commands/root"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -46,6 +46,7 @@ func TestRunnable(t *testing.T) {
 	exceptions := map[string]struct{}{
 		"card":       {},
 		"file":       {},
+		"riddle":     {}, // group command (seal/solve), like card/file
 		"completion": {},
 	}
 

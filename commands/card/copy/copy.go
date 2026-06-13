@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/card"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/card"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -13,13 +13,13 @@ import (
 
 const example = `
 * Copy the number
-kure card copy Sample
+sphinx card copy Sample
 
 * Copy the security code
-kure card copy Sample -c
+sphinx card copy Sample -c
 
 * Copy and clean after 30s
-kure card copy Sample -t 30s`
+sphinx card copy Sample -t 30s`
 
 type copyOptions struct {
 	cvc     bool
@@ -49,7 +49,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runCard(db *bolt.DB, opts *copyOptions) cmdutil.RunEFunc {
+func runCard(db *bolt.DB, opts *copyOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)

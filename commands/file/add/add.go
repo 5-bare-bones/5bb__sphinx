@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/file"
-	"github.com/GGP1/kure/pb"
-	"github.com/GGP1/kure/terminal"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -22,16 +22,16 @@ import (
 
 const example = `
 * Add a new file
-kure file add Sample -p path/to/file
+sphinx file add Sample -p path/to/file
 
 * Add a note
-kure file add Sample -n
+sphinx file add Sample -n
 
 * Add a folder and all its subfolders, limiting goroutine number to 40
-kure file add Sample -p path/to/folder -s 40
+sphinx file add Sample -p path/to/folder -s 40
 
 * Add files from a folder, ignoring subfolders
-kure file add Sample -p path/to/folder -i`
+sphinx file add Sample -p path/to/folder -i`
 
 type addOptions struct {
 	path      string
@@ -50,7 +50,7 @@ func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
 
 Path to a file must include its extension (in case it has one).
 
-The user can specify a path to a folder as well, on this occasion, kure will iterate over all the files in the folder and potential subfolders (if the -i flag is false) and store them into the database with the name "name/subfolders/filename". Empty folders will be skipped.`,
+The user can specify a path to a folder as well, on this occasion, sphinx will iterate over all the files in the folder and potential subfolders (if the -i flag is false) and store them into the database with the name "name/subfolders/filename". Empty folders will be skipped.`,
 		Aliases: []string{"new"},
 		Example: example,
 		Args:    cmdutil.MustNotExist(db, cmdutil.File),
@@ -72,7 +72,7 @@ The user can specify a path to a folder as well, on this occasion, kure will ite
 	return cmd
 }
 
-func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunEFunc {
+func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)
@@ -204,7 +204,7 @@ func addNote(db *bolt.DB, r io.Reader, name string) error {
 		return err
 	}
 
-	text := terminal.Scanlns(bufio.NewReader(r), "Text")
+	text := terminal.ScanMultipleLines(bufio.NewReader(r), "Text")
 
 	f := &pb.File{
 		Name:      name,

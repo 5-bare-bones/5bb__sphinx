@@ -165,9 +165,9 @@ func TestSetDefaults(t *testing.T) {
 		"database.path":     "test",
 		"editor":            "vim",
 		"keyfile.path":      "",
-		"session.prefix":    "kure:~ $",
+		"session.prefix":    "sphinx:~ $",
 		"session.scripts": map[string]string{
-			"login": "copy -u $1 && copy $1 && 2fa -c -t 6s $1",
+			"login": "copy -u $1 && copy $1 && topt -c -t 6s $1",
 		},
 		"session.timeout": "0s",
 	}

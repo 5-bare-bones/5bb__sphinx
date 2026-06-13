@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/sig"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
 	"github.com/pkg/errors"
 
 	"github.com/chzyer/readline"
@@ -18,10 +18,10 @@ import (
 
 const example = `
 * Run a session without timeout and using "$" as the prefix
-kure session -p $
+sphinx session -p $
 
 * Run a session for 1 hour
-kure session -t 1h`
+sphinx session -t 1h`
 
 type sessionOptions struct {
 	prefix  string
@@ -35,7 +35,7 @@ func NewCmd(r io.Reader) *cobra.Command {
 		Use:   "session",
 		Short: "Run a session",
 		Long: `Sessions let you do multiple operations by providing the master password once.
-		
+
 They support running scripts using the logical AND (&&) operator and executing pre-defined ones from the configuration file by using their aliases.
 
 During a session, the master password is encrypted and stored inside a protected buffer.
@@ -53,13 +53,13 @@ Session commands:
 	}
 
 	f := cmd.Flags()
-	f.StringVarP(&opts.prefix, "prefix", "p", "kure:~ $", "text that precedes your commands")
+	f.StringVarP(&opts.prefix, "prefix", "p", "sphinx:~ $", "text that precedes your commands")
 	f.DurationVarP(&opts.timeout, "timeout", "t", 0, "session timeout")
 
 	return cmd
 }
 
-func runSession(r io.Reader, opts *sessionOptions) cmdutil.RunEFunc {
+func runSession(r io.Reader, opts *sessionOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, _ []string) error {
 		// Use config values if they are set and the flag wasn't used
 		if p := "session.prefix"; config.IsSet(p) && !cmd.Flags().Changed("prefix") {
@@ -127,7 +127,7 @@ func execute(root *cobra.Command, commands [][]string, timeout *timeout) error {
 			continue
 		}
 
-		if args[0] == "kure" {
+		if args[0] == "sphinx" {
 			args = args[1:]
 		}
 

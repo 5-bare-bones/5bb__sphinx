@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/entry"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -13,13 +13,13 @@ import (
 
 const example = `
 * Copy password and clean after 15m
-kure copy Sample -t 15m
+sphinx copy Sample -t 15m
 
 * Copy username
-kure copy Sample -u
+sphinx copy Sample -u
 
 * Copy both username and password consecutively
-kure copy Sample -a`
+sphinx copy Sample -a`
 
 type copyOptions struct {
 	timeout  time.Duration
@@ -51,7 +51,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runCopy(db *bolt.DB, opts *copyOptions) cmdutil.RunEFunc {
+func runCopy(db *bolt.DB, opts *copyOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)

@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/GGP1/kure/auth"
-	"github.com/GGP1/kure/commands/root"
-	"github.com/GGP1/kure/config"
-	"github.com/GGP1/kure/sig"
+	"github.com/5-bare-bones/5bb__sphinx/auth"
+	"github.com/5-bare-bones/5bb__sphinx/commands/root"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
 
 	"github.com/awnumar/memguard"
 	"github.com/spf13/pflag"

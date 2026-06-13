@@ -3,9 +3,9 @@ package gen
 import (
 	"fmt"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/commands/gen/phrase"
-	"github.com/GGP1/kure/terminal"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/commands/gen/phrase"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/GGP1/atoll"
 
@@ -16,13 +16,13 @@ import (
 
 const example = `
 * Generate a random password
-kure gen -l 18 -L 1,2,3 -i %&/ -e ? -r
+sphinx gen -l 18 -L 1,2,3 -i %&/ -e ? -r
 
 * Generate and show the QR code image
-kure gen -l 20 -q
+sphinx gen -l 20 -q
 
 * Generate, copy and mute standard output
-kure gen -l 25 -cm`
+sphinx gen -l 25 -cm`
 
 type genOptions struct {
 	include string
@@ -42,7 +42,7 @@ func NewCmd() *cobra.Command {
 		Use:   "gen",
 		Short: "Generate a random password",
 		Long: `Generate a random password.
-		
+
 Keyspace is the number of possible combinations of the password.
 Average time taken to crack is based on a brute force attack scenario where the guesses per second is 1 trillion.`,
 		Example: example,
@@ -68,7 +68,7 @@ Average time taken to crack is based on a brute force attack scenario where the 
 	return cmd
 }
 
-func runGen(opts *genOptions) cmdutil.RunEFunc {
+func runGen(opts *genOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.length < 1 {
 			return cmdutil.ErrInvalidLength

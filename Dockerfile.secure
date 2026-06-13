@@ -19,11 +19,11 @@ FROM alpine:3.22
 ENV USER=gandalf
 ENV UID=10001
 
-COPY --from=builder /go/bin/kure /usr/bin/
+COPY --from=builder /go/bin/sphinx /usr/bin/
 
 RUN adduser $USER -D -g "" -s "/sbin/nologin" -u $UID \
-    && chown $USER /usr/bin/kure \
-    && chmod 0700 /usr/bin/kure
+    && chown $USER /usr/bin/sphinx \
+    && chmod 0700 /usr/bin/sphinx
 
 USER $USER
 

@@ -6,10 +6,10 @@ import (
 	"io"
 	"strings"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/entry"
-	"github.com/GGP1/kure/pb"
-	"github.com/GGP1/kure/terminal"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/GGP1/atoll"
 
@@ -20,7 +20,7 @@ import (
 
 const example = `
 * Add an entry generating a random passphrase
-kure add phrase Sample -l 6 -s $ -i atoll -e admin,login --list nolist`
+sphinx add phrase Sample -l 6 -s $ -i atoll -e admin,login --list nolist`
 
 type phraseOptions struct {
 	list, separator string
@@ -56,7 +56,7 @@ func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
 	return cmd
 }
 
-func runPhrase(db *bolt.DB, r io.Reader, opts *phraseOptions) cmdutil.RunEFunc {
+func runPhrase(db *bolt.DB, r io.Reader, opts *phraseOptions) cmdutil.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
 		name = cmdutil.NormalizeName(name)
@@ -87,12 +87,12 @@ func runPhrase(db *bolt.DB, r io.Reader, opts *phraseOptions) cmdutil.RunEFunc {
 func entryInput(r io.Reader, name string) (*pb.Entry, error) {
 	reader := bufio.NewReader(r)
 
-	username := terminal.Scanln(reader, "Username")
-	url := terminal.Scanln(reader, "URL")
-	expires := terminal.Scanln(reader, "Expires [dd/mm/yy]")
-	notes := terminal.Scanlns(reader, "Notes")
+	username := terminal.ScanOneLine(reader, "Username")
+	url := terminal.ScanOneLine(reader, "URL")
+	expires := terminal.ScanOneLine(reader, "Expires [dd/mm/yy]")
+	notes := terminal.ScanMultipleLines(reader, "Notes")
 
-	exp, err := cmdutil.FmtExpires(expires)
+	exp, err := cmdutil.FormatExpires(expires)
 	if err != nil {
 		return nil, err
 	}

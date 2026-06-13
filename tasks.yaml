@@ -1,0 +1,28 @@
+tasks:
+  - name: use new levels (1..7) and implement an `ascend` command
+    state: testing
+  - name: the command `it` should be also usable by the level name
+    state: testing
+  - name: rename `2fa` to `topt` while keeping the alias `2fa`
+    state: testing
+  - name: rename `ls` to `list` while keeping the alias `ls`
+    state: testing
+  - name: rename `cat` to `show` while keeping the alias `cat`
+    state: testing
+  - name: rename `rm` to `del` while keeping the aliases `rm` and `delete`
+    state: testing
+  - name: rename `mv` to `move` while keeping the alias `move`
+    state: testing
+  - name: add alias `statistics` to `stats`
+    state: next
+  - name: MUST use a iso-date only
+  - name: MUST update documentation and move it into a Grimmoire structure
+    state: next
+  - name: MUST add a `entry` command with all subcommands
+    state: next
+  - name: use `huh` for command line entry
+    state: next
+    note: use AI
+  - name: MAYBE add a default configuration to switch between `entry`, `file`, `cards`
+    state: blocked
+    note: those commands do not have the same subcommands!

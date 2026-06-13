@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/GGP1/kure/sig"
-	"github.com/GGP1/kure/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/sig"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 )
 
 var (

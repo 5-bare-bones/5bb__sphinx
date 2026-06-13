@@ -1,6 +1,6 @@
 ## Use 
 
-`sphinx card ls <name> [-f filter] [-q qr] [-s show]`
+`sphinx card list <name> [-f filter] [-q qr] [-s show]`
 
 ## Description
 
@@ -18,15 +18,15 @@ List cards.
 
 List a card showing sensitive information:
 ```
-sphinx card ls Sample -s
+sphinx card list Sample -s
 ```
 
 Filter:
 ```
-sphinx file ls Sample -f
+sphinx file list Sample -f
 ```
 
 List all cards;
 ```
-sphinx card ls
+sphinx card list
 ```

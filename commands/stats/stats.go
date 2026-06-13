@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	cmdutil "github.com/GGP1/kure/commands"
-	"github.com/GGP1/kure/db/bucket"
+	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -15,10 +15,10 @@ import (
 
 const example = `
 * Show statistics
-kure stats
+sphinx stats
 
 * Show statistics in JSON format
-kure stats --json`
+sphinx stats --json`
 
 type statsOptions struct {
 	json bool
@@ -29,6 +29,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	opts := statsOptions{}
 	cmd := &cobra.Command{
 		Use:     "stats",
+		Aliases: []string{"statistics"},
 		Short:   "Show database statistics",
 		Example: example,
 		RunE:    runStats(db, &opts),
@@ -40,7 +41,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runStats(db *bolt.DB, opts *statsOptions) cmdutil.RunEFunc {
+func runStats(db *bolt.DB, opts *statsOptions) cmdutil.RunErrorFunction {
 	return func(_ *cobra.Command, _ []string) error {
 		tx, err := db.Begin(false)
 		if err != nil {
@@ -59,7 +60,7 @@ func runStats(db *bolt.DB, opts *statsOptions) cmdutil.RunEFunc {
 				"cards":   nCards,
 				"entries": nEntries,
 				"files":   nFiles,
-				"totps":   nTOTPs,
+				"TOTPs":   nTOTPs,
 				"total":   total,
 			}
 			if err := json.NewEncoder(os.Stdout).Encode(stats); err != nil {

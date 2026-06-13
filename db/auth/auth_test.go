@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	dbutil "github.com/GGP1/kure/db"
-	"github.com/GGP1/kure/db/bucket"
+	dbutil "github.com/5-bare-bones/5bb__sphinx/db"
+	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
 
 	"github.com/stretchr/testify/assert"
 	bolt "go.etcd.io/bbolt"

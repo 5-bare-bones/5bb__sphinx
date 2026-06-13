@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/GGP1/kure/auth"
-	"github.com/GGP1/kure/config"
-	dbutil "github.com/GGP1/kure/db"
-	"github.com/GGP1/kure/db/bucket"
-	"github.com/GGP1/kure/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/auth"
+	"github.com/5-bare-bones/5bb__sphinx/config"
+	dbutil "github.com/5-bare-bones/5bb__sphinx/db"
+	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
+	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/pkg/errors"
 	bolt "go.etcd.io/bbolt"

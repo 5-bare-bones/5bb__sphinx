@@ -26,15 +26,15 @@ func TestConcatenatedScripts(t *testing.T) {
 	buf.WriteString("show test && login testing && clear -H")
 
 	scripts := map[string]string{
-		"show":  "ls -s $1",
-		"login": "copy -u $1 && copy $1 && 2fa -c $1",
+		"show":  "list -s $1",
+		"login": "copy -u $1 && copy $1 && topt -c $1",
 	}
 	timeout := &timeout{duration: 0}
 	expected := [][]string{
-		{"ls", "-s", "test"},
+		{"list", "-s", "test"},
 		{"copy", "-u", "testing"},
 		{"copy", "testing"},
-		{"2fa", "-c", "testing"},
+		{"topt", "-c", "testing"},
 		{"clear", "-H"},
 	}
 
@@ -58,21 +58,21 @@ func TestFillScript(t *testing.T) {
 	}{
 		{
 			desc:     "No arguments",
-			script:   "edit test && rm test",
+			script:   "edit test && del test",
 			args:     []string{"no_args"},
-			expected: "edit test && rm test",
+			expected: "edit test && del test",
 		},
 		{
 			desc:     "One argument",
-			script:   "2fa $1 && ls -q $1",
+			script:   "topt $1 && list -q $1",
 			args:     []string{"test"},
-			expected: "2fa test && ls -q test",
+			expected: "topt test && list -q test",
 		},
 		{
 			desc:     "Two arguments",
-			script:   "file cat $1 && copy $2",
+			script:   "file show $1 && copy $2",
 			args:     []string{"notes/test.txt", "testing"},
-			expected: "file cat notes/test.txt && copy testing",
+			expected: "file show notes/test.txt && copy testing",
 		},
 	}
 
@@ -92,13 +92,13 @@ func TestParseCommands(t *testing.T) {
 	}{
 		{
 			desc:     "One command",
-			args:     []string{"kure", "ls"},
-			expected: [][]string{{"kure", "ls"}},
+			args:     []string{"sphinx", "list"},
+			expected: [][]string{{"sphinx", "list"}},
 		},
 		{
 			desc:     "Two commands",
-			args:     []string{"kure", "ls", "&&", "copy", "test"},
-			expected: [][]string{{"kure", "ls"}, {"copy", "test"}},
+			args:     []string{"sphinx", "list", "&&", "copy", "test"},
+			expected: [][]string{{"sphinx", "list"}, {"copy", "test"}},
 		},
 		{
 			desc:     "Three commands",
@@ -125,8 +125,8 @@ func TestParseDoubleQuotes(t *testing.T) {
 			expected: []string{"file", "touch", "file with spaces"},
 		},
 		{
-			args:     []string{"rm", "one", "\"two", "three"},
-			expected: []string{"rm", "one", "\"two", "three"},
+			args:     []string{"del", "one", "\"two", "three"},
+			expected: []string{"del", "one", "\"two", "three"},
 		},
 		{
 			args:     []string{"\"test\""},
@@ -178,13 +178,13 @@ func TestRemoveEmptyItems(t *testing.T) {
 	}{
 		{
 			desc:     "Remove leading empty items",
-			args:     []string{"", "", " ", " ", "ls"},
-			expected: []string{"ls"},
+			args:     []string{"", "", " ", " ", "list"},
+			expected: []string{"list"},
 		},
 		{
 			desc:     "Remove all empty items",
-			args:     []string{"", "kure", " ", "copy", "", "tom", "", "", "-t", "6s", ""},
-			expected: []string{"kure", "copy", "tom", "-t", "6s"},
+			args:     []string{"", "sphinx", " ", "copy", "", "tom", "", "", "-t", "6s", ""},
+			expected: []string{"sphinx", "copy", "tom", "-t", "6s"},
 		},
 		{
 			desc:     "Remove all empty items in a script",
@@ -193,8 +193,8 @@ func TestRemoveEmptyItems(t *testing.T) {
 		},
 		{
 			desc:     "Do not remove arguments surrounded by spaces",
-			args:     []string{"kure", " file ", " ", "ls"},
-			expected: []string{"kure", " file ", "ls"},
+			args:     []string{"sphinx", " file ", " ", "list"},
+			expected: []string{"sphinx", " file ", "list"},
 		},
 	}
 
