@@ -38,13 +38,13 @@ const (
 
 const example = `
 * Generate a random passphrase
-sphinx gen phrase -l 8 -L WordList -s &
+sphinx generate phrase --length 8 --word-list WordList --separator &
 
 * Generate and show QR code
-sphinx gen phrase -l 5 -q
+sphinx generate phrase --length 5 --qr
 
 * Generate, copy and mute standard output
-sphinx gen -l 7 -cm`
+sphinx generate phrase --length 7 --copy --mute`
 
 type phraseOptions struct {
 	list, separator string

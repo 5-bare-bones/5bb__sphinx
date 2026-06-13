@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/commands/gen/phrase"
+	"github.com/5-bare-bones/5bb__sphinx/commands/generate/phrase"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/GGP1/atoll"
@@ -16,13 +16,13 @@ import (
 
 const example = `
 * Generate a random password
-sphinx gen -l 18 -L 1,2,3 -i %&/ -e ? -r
+sphinx generate --line 18 --levels 1,2,3 --include %&/ --exclude ? --repeat
 
 * Generate and show the QR code image
-sphinx gen -l 20 -q
+sphinx generate --length 20 --qr
 
 * Generate, copy and mute standard output
-sphinx gen -l 25 -cm`
+sphinx generate --length 25 -cm`
 
 type genOptions struct {
 	include string
@@ -39,8 +39,9 @@ type genOptions struct {
 func NewCmd() *cobra.Command {
 	opts := genOptions{}
 	cmd := &cobra.Command{
-		Use:   "gen",
-		Short: "Generate a random password",
+		Use:     "generate",
+		Aliases: []string{"gen"},
+		Short:   "Generate a random password",
 		Long: `Generate a random password.
 
 Keyspace is the number of possible combinations of the password.

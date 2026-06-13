@@ -8,7 +8,7 @@ import (
 
 func init() {
 	registry.Register(registry.Entry{
-		Verb:      "gen",
+		Verb:      "generate",
 		Level:     registry.TierApprentice,
 		Stateless: true,
 		New: func(c registry.BuildContext) *cobra.Command {
