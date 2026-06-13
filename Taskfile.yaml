@@ -6,19 +6,19 @@ silent: false
 
 vars:
   BINARY: sphinx
-  VERSION: 2026.1.0
+  VERSION: 2026.1.1
   PROJECT_NAME: Grimm/Sphinx
   SOURCE_DIR: .
   # Package whose vars are stamped into the binary via -ldflags -X.
-  BUILDINFO: github.com/5-bare-bones/5bb__sphinx/internal/buildinfo
+  BUILD_INFO: github.com/5-bare-bones/5bb__sphinx/internal/BUILD_INFO
   # Cumulative build tags per tier (tier 6/7 layer onto the master base).
-  TAGS_ADEPT: adept
-  TAGS_SCHOLAR: adept scholar
-  TAGS_KEEPER: adept scholar keeper
-  TAGS_MASTER: adept scholar keeper master
-  TAGS_DEV: adept scholar keeper master dev
-  TAGS_TUTOR: adept scholar keeper master tutor
-  TAGS_FULL: adept scholar keeper master dev tutor
+  TAGS_L2_ADEPT: adept
+  TAGS_L3_SCHOLAR: adept scholar
+  TAGS_L4_KEEPER: adept scholar keeper
+  TAGS_L5_MASTER: adept scholar keeper master
+  TAGS_L6_HERO: adept scholar keeper master dev
+  TAGS_L7_TUTOR: adept scholar keeper master tutor
+  TAGS_ALL_LEVELS: adept scholar keeper master dev tutor
 
 env:
   # Base64 Ed25519 public key for ascend verification; override per build.
@@ -70,44 +70,52 @@ tasks:
       - go run . {{.CLI_ARGS}}
 
   # Internal: build one tier binary into ./bin.
-  # Vars: NAME (output suffix), STAMP (tier name for buildinfo), TAGS.
+  # Vars: NAME (output suffix), STAMP (tier name for BUILD_INFO), TAGS.
   _build:tier:
     internal: true
     cmds:
       - >-
         go build -tags '{{.TAGS}}'
         -ldflags "-s -w
-        -X {{.BUILDINFO}}.Version={{.VERSION}}
-        -X {{.BUILDINFO}}.Tier={{.STAMP}}
-        -X {{.BUILDINFO}}.PubKeyB64=$SPHINX_PUBKEY"
+        -X {{.BUILD_INFO}}.Version={{.VERSION}}
+        -X {{.BUILD_INFO}}.Tier={{.STAMP}}
+        -X {{.BUILD_INFO}}.PubKeyB64=$SPHINX_PUBKEY"
         -o bin/sphinx_{{.NAME}} .
 
   build:apprentice:
+    aliases: [build:level1]
     desc: Build the apprentice (tier 1, default) binary
     cmds: [{ task: "_build:tier", vars: { NAME: apprentice, STAMP: apprentice, TAGS: "" } }]
   build:adept:
+    aliases: [build:level2]
     desc: Build the adept (tier 2) binary
-    cmds: [{ task: "_build:tier", vars: { NAME: adept, STAMP: adept, TAGS: "{{.TAGS_ADEPT}}" } }]
+    cmds: [{ task: "_build:tier", vars: { NAME: adept, STAMP: adept, TAGS: "{{.TAGS_L2_ADEPT}}" } }]
   build:scholar:
+    aliases: [build:level3]
     desc: Build the scholar (tier 3) binary
-    cmds: [{ task: "_build:tier", vars: { NAME: scholar, STAMP: scholar, TAGS: "{{.TAGS_SCHOLAR}}" } }]
+    cmds: [{ task: "_build:tier", vars: { NAME: scholar, STAMP: scholar, TAGS: "{{.TAGS_L3_SCHOLAR}}" } }]
   build:keeper:
+    aliases: [build:level4]
     desc: Build the keeper (tier 4) binary
-    cmds: [{ task: "_build:tier", vars: { NAME: keeper, STAMP: keeper, TAGS: "{{.TAGS_KEEPER}}" } }]
+    cmds: [{ task: "_build:tier", vars: { NAME: keeper, STAMP: keeper, TAGS: "{{.TAGS_L4_KEEPER}}" } }]
   build:master:
+    aliases: [build:level5]
     desc: Build the master (tier 5) binary
-    cmds: [{ task: "_build:tier", vars: { NAME: master, STAMP: master, TAGS: "{{.TAGS_MASTER}}" } }]
+    cmds: [{ task: "_build:tier", vars: { NAME: master, STAMP: master, TAGS: "{{.TAGS_L5_MASTER}}" } }]
   build:hero:
+    aliases: [build:level6]
     desc: Build the hero/dev (tier 6) binary
-    cmds: [{ task: "_build:tier", vars: { NAME: dev, STAMP: hero, TAGS: "{{.TAGS_DEV}}" } }]
+    cmds: [{ task: "_build:tier", vars: { NAME: dev, STAMP: hero, TAGS: "{{.TAGS_L6_HERO}}" } }]
   build:tutor:
+    aliases: [build:level7]
     desc: Build the tutor (tier 7) binary
-    cmds: [{ task: "_build:tier", vars: { NAME: tutor, STAMP: tutor, TAGS: "{{.TAGS_TUTOR}}" } }]
+    cmds: [{ task: "_build:tier", vars: { NAME: tutor, STAMP: tutor, TAGS: "{{.TAGS_L7_TUTOR}}" } }]
   build:full:
     desc: Build with every tag (used by the full feature suite)
-    cmds: [{ task: "_build:tier", vars: { NAME: full, STAMP: tutor, TAGS: "{{.TAGS_FULL}}" } }]
+    cmds: [{ task: "_build:tier", vars: { NAME: full, STAMP: tutor, TAGS: "{{.TAGS_ALL_LEVELS}}" } }]
 
   build:all:
+    aliases: [build:all_level]
     desc: Build every tier binary into ./bin
     cmds:
       - task: build:apprentice # level 1
@@ -152,7 +160,7 @@ tasks:
   test:go:all-tags:
     desc: Run Go unit tests with every build tag (exercises all tiers' packages)
     cmds:
-      - go test -tags '{{.TAGS_FULL}}' ./... -race
+      - go test -tags '{{.TAGS_ALL_LEVELS}}' ./... -race
 
   # --- BDD / behave (CLI integration across tiers) ---------------------------
 

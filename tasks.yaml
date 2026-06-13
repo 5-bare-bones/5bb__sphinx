@@ -1,4 +1,8 @@
 tasks:
+  - name: fully replace `keru` with `sphinx`
+    state: testing
+  - name: use Gherkin / behave tests
+    state: testing
   - name: use new levels (1..7) and implement an `ascend` command
     state: testing
   - name: the command `it` should be also usable by the level name

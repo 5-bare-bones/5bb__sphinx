@@ -78,12 +78,12 @@ However, to store the configuration file elsewhere or use a different one, set t
 Head over to the [configuration documentation](/docs/configuration/configuration.md) for a detailed explanation of the configuration file and some [samples](/docs/configuration/samples/).
 
 > [!Note]
-> Linux and BSD systems require a utility to write to the clipboard. This could be xsel, xclip, wl-clipboard or the Termux:API add-on.
+> Linux and BSD systems require a utility to write to the clipboard. This could be `xsel`, `xclip`, `wl-clipboard` or the `Termux:API` add-on.
 
 ## Documentation
 
-Learn more about how sphinx works in the [wiki](https://github.com/5-bare-bones/5bb__sphinx/wiki).
+TODO: link to GRIMMoire! 
 
 ## License
 
-This project is licensed under the Apache-2.0 license. See [LICENSE](/LICENSE).
+This project is licensed under the Creators license. See [LICENSE](/LICENSE).
