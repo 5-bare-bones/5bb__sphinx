@@ -1,6 +1,6 @@
 ## Use
 
-`kure backup [http] [path] [port]`
+`sphinx backup [http] [path] [port]`
 
 ## Description
 
@@ -18,12 +18,12 @@ Create database backup.
 
 Create file backup:
 ```
-kure backup --path path/to/file
+sphinx backup --path path/to/file
 ```
 
 Serve database on a local server:
 ```
-kure backup --http --port 8080
+sphinx backup --http --port 8080
 ```
 
 Download database:

@@ -1,6 +1,6 @@
 ## Use
 
-`kure config`
+`sphinx config`
 
 *Aliases*: cfg.
 
@@ -10,9 +10,9 @@ Configuration file operations. This command will print the configuration file on
 
 ### Subcommands
 
-- `kure config argon2`: Show argon2 parameters being used.
-- `kure config create`: Create a configuration file.
-- `kure config edit`: Edit the current configuration file.
+- `sphinx config argon2`: Show argon2 parameters being used.
+- `sphinx config create`: Create a configuration file.
+- `sphinx config edit`: Edit the current configuration file.
 
 ## Flags 
 
@@ -22,5 +22,5 @@ No flags.
 
 Read configuration file:
 ```
-kure config
+sphinx config
 ```

@@ -1,6 +1,6 @@
 ## Use
 
-`kure it <command|flags|name>`
+`sphinx it <command|flags|name>`
 
 ## Description
 
@@ -21,20 +21,20 @@ No flags.
 
 No arguments:
 ```
-kure it
+sphinx it
 ```
 
 Command without flags:
 ```
-kure it ls
+sphinx it ls
 ```
 
 Command with flags:
 ```
-kure it ls -s -q
+sphinx it ls -s -q
 ```
 
 Only the name:
 ```
-kure sample
+sphinx sample
 ```

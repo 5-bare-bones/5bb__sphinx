@@ -1,6 +1,6 @@
 ## Use
 
-`kure session [-p prefix] [-t timeout]`
+`sphinx session [-p prefix] [-t timeout]`
 
 ## Description
 
@@ -35,10 +35,10 @@ Session commands:
 
 Run a session without timeout and using "$" as the prefix:
 ```
-kure session -p $
+sphinx session -p $
 ```
 
 Run a session for 1 hour:
 ```
-kure session -t 1h
+sphinx session -t 1h
 ```

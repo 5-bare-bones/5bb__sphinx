@@ -1,10 +1,11 @@
 ## Use
 
-`kure file ls <name> [-f filter]`
+`sphinx file list <name> [-f filter]`
 
 ## Description
 
-List files.
+List entries.
+TODO: change docs to fit entry
 
 ## Flags
 
@@ -16,15 +17,15 @@ List files.
 
 List trip.txt file and copy its content to the clipboard:
 ```
-kure file ls trip.txt
+sphinx file list trip.txt
 ```
 
 Filter among files:
 ```
-kure file ls book -f
+sphinx file list book -f
 ```
 
 List all the files:
 ```
-kure file ls
+sphinx file list
 ```

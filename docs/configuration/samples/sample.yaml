@@ -1,10 +1,10 @@
-# Identitation must be respected and paths must be absolute. 
-# In case any of these values is omitted, kure will use the default one.
+# Identitation must be respected and paths must be absolute.
+# In case any of these values is omitted, sphinx will use the default one.
 # See ../configuration.md for further information.
 
 clipboard:
   timeout: "5s" # Set to "0s" or leave blank for no timeout
-  
+
 database:
   path: "/home/user/kure.db" # Must be absolute
 
@@ -15,11 +15,11 @@ keyfile:
 
 session:
   prefix: "kure:~$"
-  scripts: 
+  scripts:
     # Aliases must not contain spaces
     # Arguments containing spaces must be enclosed by double quotes
     # alias: script
-    login: copy $1 -u -t 4s && copy $1 -t 4s && 2fa $1 -c -t 5s
-    create: add $1 -l 25 && 2fa add $1
-    show: ls $1 -s && 2fa $2
-  timeout: "10m"  # Set to "0s" or leave blank for no timeout
+    login: copy $1 -u -t 4s && copy $1 -t 4s && topt $1 -c -t 5s
+    create: add $1 -l 25 && topt add $1
+    show: ls $1 -s && topt $2
+  timeout: "10m" # Set to "0s" or leave blank for no timeout

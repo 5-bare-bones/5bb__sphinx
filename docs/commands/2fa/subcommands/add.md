@@ -1,6 +1,6 @@
 ## Use
 
-`kure 2fa add <name> [-d digits] [-u url]`
+`sphinx 2fa add <name> [-d digits] [-u url]`
 
 ## Description
 
@@ -21,10 +21,10 @@ Add a two-factor authentication code.
 
 Add with setup key:
 ```
-kure 2fa add Sample
+sphinx topt add Sample
 ```
 
 Add with URL:
 ```
-kure 2fa add -u
+sphinx topt add -u
 ```

@@ -1,6 +1,6 @@
 ## Use
 
-`kure gen [-c copy] [-l length] [-L levels] [-i include] [-e exclude] [-m mute] [-r repeat] [-q qr]`
+`sphinx gen [-c copy] [-l length] [-L levels] [-i include] [-e exclude] [-m mute] [-r repeat] [-q qr]`
 
 ## Description
 
@@ -8,7 +8,7 @@ Generate a random password.
 
 ### Subcommands
 
-- `kure gen phrase`: Generate a random passphrase.
+- `sphinx gen phrase`: Generate a random passphrase.
 
 ## Flags
 
@@ -37,15 +37,15 @@ Generate a random password.
 
 Generate a password:
 ```
-kure gen -L 1,2,3,4,5 -l 16 -i s4^%$
+sphinx gen -L 1,2,3,4,5 -l 16 -i s4^%$
 ```
 
 Generate and show the QR code image:
 ```
-kure gen -l 20 -q
+sphinx gen -l 20 -q
 ```
 
 Generate, copy and mute standard output:
 ```
-kure gen -l 25 -cm
+sphinx gen -l 25 -cm
 ```

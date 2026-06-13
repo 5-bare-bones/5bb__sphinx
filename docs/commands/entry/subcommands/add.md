@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx add <name> [-c custom] [-l length] [-L levels] [-i include] [-e exclude] [-r repeat]`
+`sphinx entry add <name> [-c custom] [-l length] [-L levels] [-i include] [-e exclude] [-r repeat]`
 
 *Aliases*: create, new.
 

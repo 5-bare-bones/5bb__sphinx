@@ -1,15 +1,15 @@
 ## Configuration
 
-By default kure will read the file at `$HOME/.kure/kure.yaml` or the one specified in the `KURE_CONFIG` environment variable in case it is set. To change the file used, simply change the environment variable.
+By default sphinx will read the file at `$HOME/.kure/kure.yaml` or the one specified in the `KURE_CONFIG` environment variable in case it is set. To change the file used, simply change the environment variable.
 
 Paths inside it **MUST** be **absolute**.
 
-*Formats supported*: JSON, TOML, YAML. [Samples](https://github.com/GGP1/kure/tree/master/docs/configuration/samples).
+*Formats supported*: JSON, TOML, YAML. [Samples](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/configuration/samples).
 
 #### Helpful commands
-1.  [`kure config`](https://github.com/GGP1/kure/tree/master/docs/commands/config/config.md) -> Read current file
-1.  [`kure config create`](https://github.com/GGP1/kure/tree/master/docs/commands/config/subcommands/create/create.md) -> Create a new file
-1.  [`kure config edit`](https://github.com/GGP1/kure/tree/master/docs/commands/config/subcommands/edit/edit.md) -> Edit current file
+1.  [`sphinx config`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/config/config.md) -> Read current file
+1.  [`sphinx config create`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/config/subcommands/create/create.md) -> Create a new file
+1.  [`sphinx config edit`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/config/subcommands/edit/edit.md) -> Edit current file
 
 ### Keys
 
@@ -46,7 +46,7 @@ Path to the database file (if it doesn't exist, it will be created).
 
 ### Editor
 
-The command of the editor you would like to use. If no editor is set in the configuration file, kure will look for it in the `$EDITOR` and `$VISUAL` environment variables, if still nothing is found, it will try using vim by default.
+The command of the editor you would like to use. If no editor is set in the configuration file, sphinx will look for it in the `$EDITOR` and `$VISUAL` environment variables, if still nothing is found, it will try using vim by default.
 
 ---
 

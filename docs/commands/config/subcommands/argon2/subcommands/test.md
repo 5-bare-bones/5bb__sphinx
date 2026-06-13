@@ -1,6 +1,6 @@
 ## Use
 
-`kure config argon2 test [-i iterations] [-m memory] [-t threads]`
+`sphinx config argon2 test [-i iterations] [-m memory] [-t threads]`
 
 ## Description
 
@@ -28,5 +28,5 @@ The Argon2id variant with 1 iteration and maximum available memory is recommende
 
 Test using 700MiB of memory, 2 iterations and 4 threads:
 ```
-kure config argon2 test -m 716800 -i 2 -t 4
+sphinx config argon2 test -m 716800 -i 2 -t 4
 ```

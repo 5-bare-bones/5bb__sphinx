@@ -1,6 +1,6 @@
 ## Use 
 
-`kure card copy <name> [-c cvc] [-t timeout]`
+`sphinx card copy <name> [-c cvc] [-t timeout]`
 
 *Aliases*: cp.
 
@@ -23,10 +23,10 @@ Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 
 Copy number and clean after 15 minutes:
 ```
-kure card copy Sample -t 15m
+sphinx card copy Sample -t 15m
 ```
 
 Copy security code:
 ```
-kure card copy Sample -c
+sphinx card copy Sample -c
 ```

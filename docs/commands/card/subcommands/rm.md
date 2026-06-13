@@ -1,6 +1,6 @@
 ## Use
 
-`kure card rm <names>`
+`sphinx card rm <names>`
 
 ## Description
 
@@ -14,15 +14,15 @@ No flags.
 
 Remove a card:
 ```
-kure card rm Sample
+sphinx card rm Sample
 ```
 
 Remove a directory:
 ```
-kure card rm SampleDir/
+sphinx card rm SampleDir/
 ```
 
 Remove multiple cards:
 ```
-kure card rm Sample Sample2 Sample3
+sphinx card rm Sample Sample2 Sample3
 ```

@@ -1,4 +1,4 @@
-For more information about a command, its flags and examples please visit the [commands folder](https://github.com/GGP1/kure/tree/master/docs/commands).
+For more information about a command, its flags and examples please visit the [commands folder](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands).
 
 {{ range .Commands -}}
 - [{{ .Name }}](#{{ .Name }})

@@ -1,6 +1,6 @@
 ## Use
 
-`kure 2fa rm <names>`
+`sphinx topt rm <names>`
 
 ## Description
 
@@ -12,17 +12,17 @@ No flags.
 
 ### Examples
 
-Remove a 2FA code:
+Remove a topt code:
 ```
-kure 2fa rm Sample
+sphinx topt rm Sample
 ```
 
 Remove a directory:
 ```
-kure 2fa rm SampleDir/
+sphinx topt rm SampleDir/
 ```
 
-Remove multiple 2FA codes:
+Remove multiple topt codes:
 ```
-kure 2fa rm Sample Sample2 Sample3
+sphinx topt rm Sample Sample2 Sample3
 ```

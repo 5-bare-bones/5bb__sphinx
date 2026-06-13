@@ -1,6 +1,6 @@
 ## Use
 
-`kure config edit`
+`sphinx config edit`
 
 ## Description
 
@@ -30,5 +30,5 @@ No flags.
 
 Edit the configuration file being used:
 ```
-kure config edit
+sphinx config edit
 ```

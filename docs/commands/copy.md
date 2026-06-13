@@ -1,6 +1,6 @@
 ## Use
 
-`kure copy <name> [-a all] [-t timeout] [-u username]`
+`sphinx copy <name> [-a all] [-t timeout] [-u username]`
 
 *Aliases*: cp.
 
@@ -24,15 +24,15 @@ Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 
 Copy password and clean after 15m:
 ```
-kure copy Sample -t 15m
+sphinx copy Sample -t 15m
 ```
 
 Copy username:
 ```
-kure copy Sample -u
+sphinx copy Sample -u
 ```
 
 Copy both username and password consecutively:
 ```
-kure copy Sample -a
+sphinx copy Sample -a
 ```

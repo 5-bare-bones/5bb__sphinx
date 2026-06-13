@@ -1,6 +1,6 @@
 ## Use
 
-`kure file touch <name> [-o overwrite] [-p path]`
+`sphinx file touch <name> [-o overwrite] [-p path]`
 
 *Aliases*: th.
 
@@ -8,9 +8,9 @@
 
 Create one, multiple, all the files or an specific directory.
 
-For creating an specific file the extension must be included in the arguments, if not, kure will consider that the user is trying to create a directory and it will search for it.
+For creating an specific file the extension must be included in the arguments, if not, sphinx will consider that the user is trying to create a directory and it will search for it.
 
-In case a path is passed, kure will create any missing folders for you.
+In case a path is passed, sphinx will create any missing folders for you.
 
 ## Flags
 
@@ -23,19 +23,19 @@ In case a path is passed, kure will create any missing folders for you.
 
 Create a specific file overwriting if exists:
 ```
-kure file touch example -p path/to/folder -o
+sphinx file touch example -p path/to/folder -o
 ```
 
 Create multiple files and a directory in the current directory:
 ```
-kure file touch file1,directory,file3
+sphinx file touch file1,directory,file3
 ```
 
 Create all files (tree recreation):
 ```
-kure file touch -p path/to/folder/new/new2
+sphinx file touch -p path/to/folder/new/new2
 ```
 
-kure will recreate the file tree inside new2 folder which is inside path/to/folder/new.
+sphinx will recreate the file tree inside new2 folder which is inside path/to/folder/new.
 
-If the user doesn't include a path, kure will create them inside the directory the user is located.
+If the user doesn't include a path, sphinx will create them inside the directory the user is located.

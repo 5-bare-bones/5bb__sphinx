@@ -4,7 +4,9 @@
 
 ## Description
 
-Read file and write to standard output
+Read entry and write to standard output
+
+TODO: change docs to fit entry OR deleteß
 
 ## Flags 
 

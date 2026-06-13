@@ -1,6 +1,6 @@
 ## Use
 
-`kure clear  [-c clipboard] [-H history] [-t terminal]`
+`sphinx clear  [-c clipboard] [-H history] [-t terminal]`
 
 ## Description
 
@@ -13,27 +13,27 @@ Using the command without passing any flags clears the clipboard and the termina
 | Name | Shorthand | Type | Default | Description |
 |------|-----------|------|---------|-------------|
 | clipboard | c | bool | false | Clear clipboard |
-| history | H | bool | false | Remove kure commands from terminal history |
+| history | H | bool | false | Remove sphinx commands from terminal history |
 | terminal | t | bool | false | Clear terminal screen |
 
 ## Examples
 
 Clear terminal and clipboard:
 ```
-kure clear
+sphinx clear
 ```
 
 Clear clipboard:
 ```
-kure clear -c
+sphinx clear -c
 ```
 
 Clear terminal screen:
 ```
-kure clear -t
+sphinx clear -t
 ```
 
-Clear kure commands from terminal history:
+Clear sphinx commands from terminal history:
 ```
-kure clear -H
+sphinx clear -H
 ```

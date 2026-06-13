@@ -1,6 +1,6 @@
 ## Use
 
-`kure rm <names>`
+`sphinx rm <names>`
 
 ## Description
 
@@ -14,15 +14,15 @@ No flags.
 
 Remove an entry:
 ```
-kure rm Sample
+sphinx rm Sample
 ```
 
 Remove a directory:
 ```
-kure rm SampleDir/
+sphinx rm SampleDir/
 ```
 
 Remove multiple entries:
 ```
-kure rm Sample Sample2 Sample3
+sphinx rm Sample Sample2 Sample3
 ```

@@ -1,12 +1,12 @@
 ## Use
 
-`kure card edit <name> [-i it]`
+`sphinx card edit <name> [-i it]`
 
 ## Description
 
 Edit a card.
 
-If the name is edited, kure will remove the card with the old name and create one with the new name.
+If the name is edited, sphinx will remove the card with the old name and create one with the new name.
 
 **Caution**: when using a text editor the content of the card is written in plaintext to a temporary file, although the file has a random name and it's erased right after the first save, this isn't secure enough.
 
@@ -47,10 +47,10 @@ Notepad++: notepad++
 
 Edit card with standard input:
 ```
-kure card edit Sample
+sphinx card edit Sample
 ```
 
 Edit card with text editor:
 ```
-kure card edit Sample -i
+sphinx card edit Sample -i
 ```

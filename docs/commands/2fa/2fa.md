@@ -1,6 +1,6 @@
 ## Use
 
-`kure 2fa <name> [-c copy] [-i info] [-t timeout]`
+`sphinx topt <name> [-c copy] [-i info] [-t timeout]`
 
 ## Description
 
@@ -10,8 +10,8 @@ Use the `[-i info]` flag to display information about the setup key, it also gen
 
 ## Subcommands
 
-- [`kure 2fa add`](https://github.com/GGP1/kure/tree/master/docs/commands/2fa/subcommands/add.md): Add a two-factor authentication code.
-- [`kure 2fa rm`](https://github.com/GGP1/kure/tree/master/docs/commands/2fa/subcommands/rm.md): Remove two-factor authentication codes from the database.
+- [`sphinx topt add`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/topt/subcommands/add.md): Add a two-factor authentication code.
+- [`sphinx topt rm`](https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/topt/subcommands/rm.md): Remove two-factor authentication codes from the database.
 
 ## Flags
 
@@ -29,15 +29,15 @@ Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 
 List one and copy to the clipboard:
 ```
-kure 2fa Sample -c
+sphinx topt Sample -c
 ```
 
 List all:
 ```
-kure 2fa
+sphinx topt
 ```
 
 Display information about the setup key:
 ```
-kure 2fa Sample -i
+sphinx topt Sample -i
 ```

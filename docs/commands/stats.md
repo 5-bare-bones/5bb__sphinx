@@ -1,6 +1,6 @@
 ## Use
 
-`kure stats`
+`sphinx stats`
 
 ## Description
 
@@ -16,10 +16,10 @@ Show database statistics.
 
 Show statistics:
 ```
-kure stats
+sphinx stats
 ```
 
 Show statistics in JSON format:
 ```
-kure stats --json
+sphinx stats --json
 ```

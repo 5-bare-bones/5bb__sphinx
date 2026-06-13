@@ -1,6 +1,6 @@
 ## Use
 
-`kure add phrase <name> [-l length] [-s separator] [-i include] [-e exclude] [-L list]`
+`sphinx add phrase <name> [-l length] [-s separator] [-i include] [-e exclude] [-L list]`
 
 *Aliases*: passphrase.
 
@@ -32,15 +32,15 @@ Valid time formats are:
 
 Passphrase without a list:
 ```
-kure add phrase Sample -l 5 -s / -i atoll, kure
+sphinx add phrase Sample -l 5 -s / -i atoll, kure
 ```
 
 Passphrase using a word list (default):
 ```
-kure add phrase Sample -l 7 -L WordList
+sphinx add phrase Sample -l 7 -L WordList
 ```
 
 Passphrase using a syllable list:
 ```
-kure add phrase Sample -l 12 -s = -L SyllableList
+sphinx add phrase Sample -l 12 -s = -L SyllableList
 ```

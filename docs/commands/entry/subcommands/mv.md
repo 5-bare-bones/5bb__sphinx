@@ -4,7 +4,8 @@
 
 ## Description
 
-Move a file or directory.
+Move an entry.
+TODO: change docs to fit entry
 
 In case any of the paths contains spaces within it, it must be enclosed by double quotes.
 

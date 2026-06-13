@@ -1,6 +1,6 @@
 ## Use
 
-`kure import <manager-name> [-e erase] [-p path]`
+`sphinx import <manager-name> [-e erase] [-p path]`
 
 ## Description
 
@@ -29,10 +29,10 @@ Supported password managers:
 
 Import:
 ```
-kure import <manager-name> -p path/to/file
+sphinx import <manager-name> -p path/to/file
 ```
 
 Import and erase the file:
 ```
-kure import <manager-name> -e -p path/to/file
+sphinx import <manager-name> -e -p path/to/file
 ```

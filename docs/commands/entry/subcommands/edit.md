@@ -4,7 +4,9 @@
 
 ## Description
 
-Edit a file.
+Edit a entry.
+
+TODO: change docs to fit entry
 
 Caution: a temporary file is created with a random name, it will be erased right after the first save but it could still be read by a malicious actor.
 Notes:

@@ -11,7 +11,7 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/GGP1/kure/commands/root"
+	"github.com/5-bare-bones/5bb__sphinx/commands/root"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -111,7 +111,7 @@ func customMarkdown(cmd *cobra.Command, w io.Writer) error {
 }
 
 func getURL(cmd *cobra.Command) string {
-	url := "https://github.com/GGP1/kure/tree/master/docs/commands/"
+	url := "https://github.com/5-bare-bones/5bb__sphinx/tree/master/docs/commands/"
 
 	split := strings.Split(cmd.CommandPath(), " ")
 	for _, s := range split[1:] {

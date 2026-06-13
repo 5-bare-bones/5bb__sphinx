@@ -1,6 +1,6 @@
 ## Use
 
-`kure ls <name> [-f filter] [-q qr] [-s show]`
+`sphinx ls <name> [-f filter] [-q qr] [-s show]`
 
 *Aliases*: entries, list.
 
@@ -22,20 +22,20 @@ List entries.
 
 List an entry:
 ```
-kure ls Sample
+sphinx ls Sample
 ```
 
 List one and show sensitive information:
 ```
-kure ls Sample -s
+sphinx ls Sample -s
 ```
 
 Filter:
 ```
-kure ls Sample -f
+sphinx ls Sample -f
 ```
 
 List all entries:
 ```
-kure ls
+sphinx ls
 ```

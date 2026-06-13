@@ -4,7 +4,8 @@
 
 ## Description
 
-Remove files or directories.
+Remove entry.
+TODO: change docs to fit entry
 
 ## Flags 
 

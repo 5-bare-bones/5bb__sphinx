@@ -1,10 +1,10 @@
 ## Use
 
-`kure config create [-p path]`
+`sphinx config create [-p path]`
 
 ## Description
 
-Create a configuration file. kure will create the file for you if necessary.
+Create a configuration file. sphinx will create the file for you if necessary.
 
 ### Formats supported
 
@@ -38,5 +38,5 @@ Notepad++: notepad++
 
 Create a configuration file:
 ```
-kure config create -p path/to/file
+sphinx config create -p path/to/file
 ```

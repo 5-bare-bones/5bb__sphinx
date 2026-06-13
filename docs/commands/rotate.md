@@ -1,6 +1,6 @@
 ## Use
 
-`kure rotate <name> [-c copy] [custom] [-t timeout]`
+`sphinx rotate <name> [-c copy] [custom] [-t timeout]`
 
 ## Description
 
@@ -18,10 +18,10 @@ Rotate an entry's password.
 
 Rotate a password by generating a random one that uses the same parameters:
 ```
-kure rotate Sample
+sphinx rotate Sample
 ```
 
 Rotate a password using a new custom one:
 ```
-kure rotate Sample -c
+sphinx rotate Sample -c
 ```

@@ -1,6 +1,6 @@
 ## Use
 
-`kure gen phrase [-c copy] [-l length] [-s separator] [-i include] [-e exclude] [-m mute] [-L list] [-q qr]`
+`sphinx gen phrase [-c copy] [-l length] [-s separator] [-i include] [-e exclude] [-m mute] [-L list] [-q qr]`
 
 *Aliases*: passphrase.
 
@@ -25,15 +25,15 @@ Generate a random passphrase.
 
 Generate a passphrase without a list (default):
 ```
-kure gen phrase -l 6
+sphinx gen phrase -l 6
 ```
 
 Generate a passphrase with word list:
 ```
-kure gen phrase -l 7 -L WordList
+sphinx gen phrase -l 7 -L WordList
 ```
 
 Generate a passphrase with syllable list:
 ```
-kure add phrase -l 12 -s = -L SyllableList
+sphinx add phrase -l 12 -s = -L SyllableList
 ```

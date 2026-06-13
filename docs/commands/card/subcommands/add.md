@@ -1,6 +1,6 @@
 ## Use
 
-`kure card add <name>`
+`sphinx card add <name>`
 
 *Aliases*: create, new.
 
@@ -16,5 +16,5 @@ No flags.
 
 Add a card:
 ```
-kure card add Sample
+sphinx card add Sample
 ```

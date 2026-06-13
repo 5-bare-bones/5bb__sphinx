@@ -1,6 +1,6 @@
 ## Use
 
-`kure export <manager-name> [-p path]`
+`sphinx export <manager-name> [-p path]`
 
 ## Description
 
@@ -24,5 +24,5 @@ Supported password managers:
 
 Export:
 ```
-kure export <manager-name> -p path/to/file
+sphinx export <manager-name> -p path/to/file
 ```
