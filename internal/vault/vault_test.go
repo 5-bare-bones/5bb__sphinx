@@ -42,7 +42,7 @@ func login(t *testing.T, vault *bolt.DB, passphrase string) {
 }
 
 func TestCreateRoundTrip(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "alice.db")
+	path := filepath.Join(t.TempDir(), "alice.vault")
 	const pass = "correct horse battery staple"
 
 	seed := Seed{
@@ -74,12 +74,12 @@ func TestCreateRoundTrip(t *testing.T) {
 }
 
 func TestCreateRejectsEmptyPassphrase(t *testing.T) {
-	err := Create(filepath.Join(t.TempDir(), "x.db"), "", DefaultArgon2(), Seed{})
+	err := Create(filepath.Join(t.TempDir(), "x.vault"), "", DefaultArgon2(), Seed{})
 	require.Error(t, err)
 }
 
 func TestWrongPassphraseFailsLogin(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "bob.db")
+	path := filepath.Join(t.TempDir(), "bob.vault")
 	require.NoError(t, Create(path, "right answer", DefaultArgon2(), Seed{}))
 
 	vault, err := bolt.Open(path, 0o600, &bolt.Options{Timeout: time.Second})

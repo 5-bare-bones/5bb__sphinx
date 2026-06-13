@@ -29,11 +29,11 @@ func Init() error {
 }
 
 func getConfigPath() (string, error) {
-	configPath := os.Getenv("KURE_CONFIG")
+	configPath := os.Getenv("SPHINX_CONFIG")
 	if configPath != "" {
 		ext := filepath.Ext(configPath)
 		if ext == "" || ext == "." {
-			return "", errors.New("\"KURE_CONFIG\" environment variable path must have an extension")
+			return "", errors.New("\"SPHINX_CONFIG\" environment variable path must have an extension")
 		}
 
 		return configPath, nil
@@ -44,8 +44,8 @@ func getConfigPath() (string, error) {
 		return "", errors.Wrap(err, "finding home directory")
 	}
 
-	homeDir = filepath.Join(homeDir, ".kure")
-	configPath = filepath.Join(homeDir, "kure.yaml")
+	homeDir = filepath.Join(homeDir, ".sphinx")
+	configPath = filepath.Join(homeDir, "sphinx.yaml")
 
 	if _, err := os.Stat(configPath); err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -63,7 +63,7 @@ func createDefaultConfigFile(homeDir, configPath string) error {
 	if err := os.MkdirAll(homeDir, 0o700); err != nil {
 		return errors.Wrap(err, "creating the directory")
 	}
-	SetDefaults(filepath.Join(homeDir, "kure.db"))
+	SetDefaults(filepath.Join(homeDir, "sphinx.vault"))
 	return Write(configPath, true)
 }
 

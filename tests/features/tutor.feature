@@ -17,7 +17,7 @@ Feature: Tutor tier
     When I run sphinx "forge world.yaml -o vaults"
     Then the exit code is 0
     And stdout contains "minted 1 vault"
-    And a file "vaults/alice.db" exists
+    And a file "vaults/alice.vault" exists
 
   Scenario: forge refuses to overwrite an existing vault
     Given a file "world.yaml" with content

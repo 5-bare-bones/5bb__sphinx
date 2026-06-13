@@ -6,7 +6,7 @@
 
 ## Description
 
-Create an entry using a password.
+Create an `entry` using a password.
 
 ## Subcommands
 

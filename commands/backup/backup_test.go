@@ -90,7 +90,7 @@ func TestBackupErrors(t *testing.T) {
 		{
 			desc: "Mutually exclusive flags",
 			http: "true",
-			path: "backup.db",
+			path: "backup.vault",
 		},
 	}
 

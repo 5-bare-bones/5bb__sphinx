@@ -1,9 +1,11 @@
-# kure
+# Sphinx - Secure Password Hide IN X? 
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/5-bare-bones/5bb__sphinx)](https://pkg.go.dev/github.com/5-bare-bones/5bb__sphinx)
-[![Go Report Card](https://goreportcard.com/badge/github.com/5-bare-bones/5bb__sphinx)](https://goreportcard.com/report/github.com/5-bare-bones/5bb__sphinx)
 
-Password manager for the command-line that aims to offer a secure and private way of operating with sensitive information by reducing the attack surface to its minimum expression.
+> Created from `kure`
+> Modified to be used for learners.
+
+The learners password manager for the command-line that aims to offer a secure and private way of operating with sensitive information by reducing the attack surface to its minimum expression.
 
 ## Features
 
@@ -30,44 +32,17 @@ Linux, macOS, BSD, Windows and mobile pre-compiled binaries can be downloaded [h
 
 </details>
 
-<details><summary>Homebrew (Tap)</summary>
-
-```
-brew install GGP1/tap/kure
-```
-
-</details>
-
 <details><summary>Scoop (Windows)</summary>
 
+TODO: add scoop bucket to 5-bare-bones
+
 ```bash
-scoop bucket add GGP1 https://github.com/GGP1/scoop-bucket.git
+scoop bucket add 5BB https://github.com/5-bare-bonse/scoop-bucket.git
 scoop install 5-bare-bones/5bb__sphinx
 ```
 
-or
-
-```bash
-scoop install https://raw.githubusercontent.com/GGP1/scoop-bucket/master/bucket/kure.json
-```
-
 </details>
 
-<details><summary>Docker</summary>
-	
-> For details about persisting the information check the [docker-compose.yml](/docker-compose.yml) file.
-
-```
-docker run -it gastonpalomeque/sphinx sh
-```
-
-For a container with limited privileges and kernel capabilities, use:
-
-```
-docker run -it --security-opt=no-new-privileges --cap-drop=all gastonpalomeque/kure-secure sh
-```
-
-</details>
 
 <details><summary>Mobile phones terminal emulators</summary>
 
@@ -83,8 +58,9 @@ scaphoid file move sphinx $BIN_PATH
 
 ```bash
 git clone https://github.com/5-bare-bones/5bb__sphinx
-cd kure
-make install
+cd sphinx
+task build:all 
+task install
 ```
 
 </details>
@@ -93,11 +69,11 @@ make install
 
 Out-of-the-box sphinx needs no configuration, it creates a file with the default configuration and the vault at:
 
-- **Linux, BSD**: `$HOME/.kure`
-- **Darwin**: `$HOME/.kure` or `/.kure`
-- **Windows**: `%USERPROFILE%/.kure`
+- **Linux, BSD**: `$HOME/.sphinx`
+- **Darwin**: `$HOME/.sphinx` or `/.sphinx`
+- **Windows**: `%USERPROFILE%/.sphinx`
 
-However, to store the configuration file elsewhere or use a different one, set the path to it in the `KURE_CONFIG` environment variable.
+However, to store the configuration file elsewhere or use a different one, set the path to it in the `SPHINX_CONFIG` environment variable.
 
 Head over to the [configuration documentation](/docs/configuration/configuration.md) for a detailed explanation of the configuration file and some [samples](/docs/configuration/samples/).
 

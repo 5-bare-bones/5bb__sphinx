@@ -3,7 +3,7 @@ Behave environment hooks for sphinx.
 
 Each scenario gets a fresh temporary working directory that also doubles as the
 process HOME, so sphinx creates its config and vault under <tmpdir>/.sphinx and
-never touches the developer's real ~/.kure.
+never touches the developer's real ~/.sphinx.
 """
 
 import os
@@ -17,7 +17,7 @@ def before_scenario(context, scenario):
     context.stderr = ""
     context.tmpdir = tempfile.mkdtemp(prefix="sphinx_test_")
     # Isolate every sphinx invocation: HOME points at the scratch dir, so the
-    # config (.kure/kure.yaml) and vault (.kure/kure.db) are created there.
+    # config (.sphinx/sphinx.yaml) and vault (.sphinx/sphinx.db) are created there.
     context.extra_env = {"HOME": context.tmpdir}
 
 

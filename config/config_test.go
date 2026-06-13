@@ -25,7 +25,7 @@ func TestInit(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			os.Setenv("KURE_CONFIG", tc.path)
+			os.Setenv("SPHINX_CONFIG", tc.path)
 
 			err := Init()
 			assert.NoError(t, err)
@@ -81,7 +81,7 @@ func TestInitErrors(t *testing.T) {
 				os.Setenv(env, "")
 			}
 
-			os.Setenv("KURE_CONFIG", tc.path)
+			os.Setenv("SPHINX_CONFIG", tc.path)
 
 			err := Init()
 			assert.Error(t, err)

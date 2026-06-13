@@ -3,7 +3,7 @@
     "timeout": "5s"
   },
   "vault": {
-    "path": "/home/user/sphinx.db"
+    "path": "/home/user/sphinx.vault"
   },
   "editor": "micro",
   "keyfile": {

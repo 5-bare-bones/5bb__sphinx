@@ -1,6 +1,6 @@
 ## Configuration
 
-By default sphinx will read the file at `$HOME/.kure/kure.yaml` or the one specified in the `KURE_CONFIG` environment variable in case it is set. To change the file used, simply change the environment variable.
+By default sphinx will read the file at `$HOME/.sphinx/sphinx.yaml` or the one specified in the `SPHINX_CONFIG` environment variable in case it is set. To change the file used, simply change the environment variable.
 
 Paths inside it **MUST** be **absolute**.
 

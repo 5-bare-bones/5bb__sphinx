@@ -14,7 +14,7 @@ import (
 func TestDelete(t *testing.T) {
 	vault := command_helper.SetContext(t)
 
-	names := []string{"test.txt", "directory/test.txt", "kure.db", "kure.yaml"}
+	names := []string{"test.txt", "directory/test.txt", "sphinx.vault", "sphinx.yaml"}
 	for _, name := range names {
 		err := file.Create(vault, &protobuf.File{Name: name})
 		assert.NoErrorf(t, err, "Failed creating %q", name)
@@ -37,7 +37,7 @@ func TestDelete(t *testing.T) {
 		},
 		{
 			desc:  "Remove multiple files",
-			names: []string{"kure.db", "kure.yaml"},
+			names: []string{"sphinx.vault", "sphinx.yaml"},
 			input: "y",
 		},
 		{

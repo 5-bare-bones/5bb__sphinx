@@ -8,7 +8,7 @@ editor = "micro"
   timeout = "5s" # Set to "0s" or leave blank for no timeout
 
 [vault]
-  path = "/home/user/kure.db" # Must be absolute
+  path = "/home/user/sphinx.vault" # Must be absolute
 
 [keyfile]
   path = "/home/user/secret.key" # Must be absolute

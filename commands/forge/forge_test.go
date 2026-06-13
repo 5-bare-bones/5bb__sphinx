@@ -47,7 +47,7 @@ func TestForgeMintsVaults(t *testing.T) {
 
 	require.NoError(t, runForgeCmd(t, manifest, out))
 
-	for _, name := range []string{"alice.db", "bob.db"} {
+	for _, name := range []string{"alice.vault", "bob.vault"} {
 		_, err := os.Stat(filepath.Join(out, name))
 		assert.NoError(t, err, "expected %s to be minted", name)
 	}

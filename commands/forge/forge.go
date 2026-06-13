@@ -122,14 +122,14 @@ func runForge(outDir *string) command_helper.RunErrorFunction {
 			if s.Passphrase == "" {
 				return errors.Errorf("student %q has no passphrase", s.Name)
 			}
-			if _, err := os.Stat(filepath.Join(dir, s.Name+".db")); err == nil {
+			if _, err := os.Stat(filepath.Join(dir, s.Name+".vault")); err == nil {
 				return errors.Errorf("vault already exists: %s (refusing to overwrite)",
-					filepath.Join(dir, s.Name+".db"))
+					filepath.Join(dir, s.Name+".vault"))
 			}
 		}
 
 		for _, s := range m.Students {
-			path := filepath.Join(dir, s.Name+".db")
+			path := filepath.Join(dir, s.Name+".vault")
 			if err := vault.Create(path, s.Passphrase, params, seedFor(s)); err != nil {
 				return errors.Wrapf(err, "forging vault for %q", s.Name)
 			}
