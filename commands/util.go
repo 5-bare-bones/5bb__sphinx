@@ -1,23 +1,24 @@
-package cmdutil
+package command_helper
 
 import (
 	"crypto/rand"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/5-bare-bones/5bb__sphinx/config"
-	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
 	"github.com/5-bare-bones/5bb__sphinx/orderedmap"
 	"github.com/5-bare-bones/5bb__sphinx/sig"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/bucket"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 
 	"github.com/atotto/clipboard"
 	"github.com/awnumar/memguard"
@@ -200,8 +201,8 @@ func Erase(filename string) error {
 // Exists checks if name or one of its folders is already being used.
 //
 // Returns an error if a match was found.
-func Exists(db *bolt.DB, name string, obj object) error {
-	records, objType, err := listNames(db, obj)
+func Exists(vault *bolt.DB, name string, obj object) error {
+	records, objType, err := listNames(vault, obj)
 	if err != nil {
 		return err
 	}
@@ -209,35 +210,81 @@ func Exists(db *bolt.DB, name string, obj object) error {
 	return exists(records, name, objType)
 }
 
-// FormatExpires returns expires formatted.
+// errExpires describes the accepted expiration input.
+var errExpires = errors.New(`"expires" must be "Never" or an ISO date: YYYY, YYYY-MM or YYYY-MM-DD`)
+
+// FormatExpires normalizes an expiration into an ISO date (YYYY-MM-DD).
+//
+// Partial dates are completed to the END of the period they name:
+//   - YYYY       -> YYYY-12-31
+//   - YYYY-MM    -> last day of that month (e.g. 2025-02 -> 2025-02-28)
+//   - YYYY-MM-DD -> used as-is (must be a real calendar date)
+//
+// "never"/""/"0"/"0s" all map to "Never".
 func FormatExpires(expires string) (string, error) {
-	switch strings.ToLower(expires) {
-	case "never", "", " ", "0", "0s":
+	trimmed := strings.TrimSpace(expires)
+	switch strings.ToLower(trimmed) {
+	case "never", "", "0", "0s":
 		return "Never", nil
-
-	default:
-		// TODO: use iso date only
-
-		exp, err := time.Parse("02/01/2006", expires)
-		if err != nil {
-			exp, err = time.Parse("2006/01/02", expires)
-			if err != nil {
-				return "", errors.New("\"expires\" field has an invalid format. Valid formats: d/m/y or y/m/d")
-			}
-		}
-
-		return exp.Format(time.RFC1123Z), nil
 	}
+
+	parts := strings.Split(trimmed, "-")
+	if len(parts) > 3 {
+		return "", errExpires
+	}
+
+	year, err := atoiInRange(parts[0], 1, 9999)
+	if err != nil {
+		return "", errExpires
+	}
+
+	month := 12
+	if len(parts) >= 2 {
+		if month, err = atoiInRange(parts[1], 1, 12); err != nil {
+			return "", errExpires
+		}
+	}
+
+	// Year- or month-only inputs expire at the end of the given period.
+	day := lastDayOfMonth(year, month)
+	if len(parts) == 3 {
+		if day, err = atoiInRange(parts[2], 1, 31); err != nil {
+			return "", errExpires
+		}
+	}
+
+	date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+	// Reject impossible explicit dates such as 2025-02-30, which time.Date
+	// would otherwise silently roll over into the following month.
+	if date.Year() != year || date.Month() != time.Month(month) || date.Day() != day {
+		return "", errExpires
+	}
+
+	return date.Format("2006-01-02"), nil
+}
+
+// lastDayOfMonth returns the number of days in the given year/month. Day 0 of
+// the next month is the last day of this one.
+func lastDayOfMonth(year, month int) int {
+	return time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day()
+}
+
+func atoiInRange(s string, lo, hi int) (int, error) {
+	n, err := strconv.Atoi(strings.TrimSpace(s))
+	if err != nil || n < lo || n > hi {
+		return 0, errExpires
+	}
+	return n, nil
 }
 
 // MustExist returns an error if a record does not exist or if the name is invalid.
-func MustExist(db *bolt.DB, obj object, allowDir ...bool) cobra.PositionalArgs {
+func MustExist(vault *bolt.DB, obj object, allowDir ...bool) cobra.PositionalArgs {
 	return func(_ *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return ErrInvalidName
 		}
 
-		names, objType, err := listNames(db, obj)
+		names, objType, err := listNames(vault, obj)
 		if err != nil {
 			return err
 		}
@@ -284,7 +331,7 @@ func MustExist(db *bolt.DB, obj object, allowDir ...bool) cobra.PositionalArgs {
 
 // MustExistList is like MustExist but it doesn't fail if
 // there are no arguments or if the user is using the filter flag.
-func MustExistList(db *bolt.DB, obj object) cobra.PositionalArgs {
+func MustExistList(vault *bolt.DB, obj object) cobra.PositionalArgs {
 	return func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 || cmd.Flags().Changed("filter") {
 			return nil
@@ -297,12 +344,12 @@ func MustExistList(db *bolt.DB, obj object) cobra.PositionalArgs {
 		}
 
 		// Pass on cmd and args
-		return MustExist(db, obj)(cmd, args)
+		return MustExist(vault, obj)(cmd, args)
 	}
 }
 
 // MustNotExist returns an error if the record exists or if the name is invalid.
-func MustNotExist(db *bolt.DB, obj object, allowDir ...bool) cobra.PositionalArgs {
+func MustNotExist(vault *bolt.DB, obj object, allowDir ...bool) cobra.PositionalArgs {
 	return func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
 			return ErrInvalidName
@@ -314,7 +361,7 @@ func MustNotExist(db *bolt.DB, obj object, allowDir ...bool) cobra.PositionalArg
 			}
 			name = NormalizeName(name, allowDir...)
 
-			if err := Exists(db, name, obj); err != nil {
+			if err := Exists(vault, name, obj); err != nil {
 				return err
 			}
 		}
@@ -334,7 +381,7 @@ func NormalizeName(name string, allowDir ...bool) string {
 	return strings.ToLower(strings.TrimSpace(name))
 }
 
-// SelectEditor returns the editor to use, if none is found it returns vim.
+// SelectEditor returns the editor to use, if none is found it returns micro.
 func SelectEditor() string {
 	if def := config.GetString("editor"); def != "" {
 		return def
@@ -344,21 +391,21 @@ func SelectEditor() string {
 		return v
 	}
 
-	return "vim"
+	return "micro"
 }
 
 // SetContext sets up the testing environment.
 //
-// It uses t.Cleanup() to close the database connection after the test and
+// It uses t.Cleanup() to close the vault connection after the test and
 // all its subtests are completed.
 func SetContext(t testing.TB) *bolt.DB {
 	t.Helper()
 
-	dbFile, err := os.CreateTemp("", "*")
+	vaultFile, err := os.CreateTemp("", "*")
 	assert.NoError(t, err)
 
-	db, err := bolt.Open(dbFile.Name(), 0o600, &bolt.Options{Timeout: 1 * time.Second})
-	assert.NoError(t, err, "Failed connecting to the database")
+	db, err := bolt.Open(vaultFile.Name(), 0o600, &bolt.Options{Timeout: 1 * time.Second})
+	assert.NoError(t, err, "Failed connecting to the vault")
 
 	config.Reset()
 	// Reduce argon2 parameters to speed up tests
@@ -384,7 +431,7 @@ func SetContext(t testing.TB) *bolt.DB {
 	os.Stdout = os.NewFile(0, "") // Mute stdout
 	os.Stderr = os.NewFile(0, "") // Mute stderr
 	t.Cleanup(func() {
-		assert.NoError(t, db.Close(), "Failed connecting to the database")
+		assert.NoError(t, db.Close(), "Failed connecting to the vault")
 	})
 
 	return db
@@ -563,7 +610,7 @@ func levenshteinDistance(s, t string) int {
 
 // listNames lists all the records depending on the object passed.
 // It returns a list and the type of object used.
-func listNames(db *bolt.DB, obj object) ([]string, string, error) {
+func listNames(vault *bolt.DB, obj object) ([]string, string, error) {
 	var (
 		err     error
 		objType string
@@ -573,19 +620,19 @@ func listNames(db *bolt.DB, obj object) ([]string, string, error) {
 	switch obj {
 	case Card:
 		objType = "card"
-		records, err = card.ListNames(db)
+		records, err = card.ListNames(vault)
 
 	case Entry:
 		objType = "entry"
-		records, err = entry.ListNames(db)
+		records, err = entry.ListNames(vault)
 
 	case File:
 		objType = "file"
-		records, err = file.ListNames(db)
+		records, err = file.ListNames(vault)
 
 	case TOTP:
 		objType = "TOTP"
-		records, err = totp.ListNames(db)
+		records, err = totp.ListNames(vault)
 	}
 	if err != nil {
 		return nil, "", err

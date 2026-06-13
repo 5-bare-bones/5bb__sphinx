@@ -17,7 +17,7 @@ const example = `
 sphinx card (add|copy|edit|list|del)`
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "card",
 		Short:   "Card operations",
@@ -25,11 +25,11 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		cadd.NewCmd(db, os.Stdin),
-		ccopy.NewCmd(db),
-		cedit.NewCmd(db),
-		cls.NewCmd(db),
-		crm.NewCmd(db, os.Stdin),
+		cadd.NewCmd(vault, os.Stdin),
+		ccopy.NewCmd(vault),
+		cedit.NewCmd(vault),
+		cls.NewCmd(vault),
+		crm.NewCmd(vault, os.Stdin),
 	)
 
 	return cmd

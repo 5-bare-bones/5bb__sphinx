@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/internal/buildinfo"
 	"github.com/5-bare-bones/5bb__sphinx/internal/registry"
 
@@ -15,7 +15,7 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
-// builtinStateless are the cobra/help built-ins that never touch the database.
+// builtinStateless are the cobra/help built-ins that never touch the vault.
 // Real commands declare statelessness via registry.Entry.Stateless instead, so
 // the set stays correct for whatever tier was compiled in.
 var builtinStateless = map[string]struct{}{
@@ -32,7 +32,7 @@ type rootOptions struct {
 // registry in this build. Which commands that is depends on the tier-tagged
 // import aggregators (see register_*.go); lower tiers literally compile in
 // fewer command packages.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := rootOptions{}
 	cmd := &cobra.Command{
 		Use:           "sphinx",
@@ -47,7 +47,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 
 	cmd.Flags().BoolVarP(&opts.version, "version", "v", false, "display sphinx version")
 
-	ctx := registry.BuildContext{DB: db, In: os.Stdin, Out: os.Stdout}
+	ctx := registry.BuildContext{Vault: vault, In: os.Stdin, Out: os.Stdout}
 	entries := registry.Entries()
 
 	// First pass: build every top-level command and index it by verb so that
@@ -98,7 +98,7 @@ func applyIdentity(c *cobra.Command, e registry.Entry) {
 	}
 }
 
-func runRoot(opts *rootOptions) cmdutil.RunErrorFunction {
+func runRoot(opts *rootOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.version {
 			printVersion()
@@ -125,7 +125,7 @@ func printVersion() {
 }
 
 // IsStatelessCommand reports whether the named command can run without opening
-// the database. It consults the registry so the answer reflects the compiled-in
+// the vault. It consults the registry so the answer reflects the compiled-in
 // tier, plus the cobra built-ins.
 func IsStatelessCommand(command string) bool {
 	if _, ok := builtinStateless[command]; ok {

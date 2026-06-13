@@ -26,7 +26,7 @@ Feature: Scholar tier
   Scenario: stats help
     When I run sphinx "stats --help"
     Then the exit code is 0
-    And stdout contains "database statistics"
+    And stdout contains "vault statistics"
 
   Scenario: file gains the scholar-tier move and del subcommands
     When I run sphinx "file --help"

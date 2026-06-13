@@ -11,7 +11,7 @@ func init() {
 		Verb:  "list",
 		Level: registry.TierApprentice,
 		New: func(c registry.BuildContext) *cobra.Command {
-			return NewCmd(c.DB)
+			return NewCmd(c.Vault)
 		},
 	})
 }

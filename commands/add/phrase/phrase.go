@@ -6,10 +6,10 @@ import (
 	"io"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/GGP1/atoll"
 
@@ -20,7 +20,7 @@ import (
 
 const example = `
 * Add an entry generating a random passphrase
-sphinx add phrase Sample -l 6 -s $ -i atoll -e admin,login --list nolist`
+sphinx add phrase Sample --length 6 --separator $ --include atoll --exclude admin,login --list nolist`
 
 type phraseOptions struct {
 	list, separator string
@@ -29,15 +29,15 @@ type phraseOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
+func NewCmd(vault *bolt.DB, r io.Reader) *cobra.Command {
 	opts := phraseOptions{}
 	cmd := &cobra.Command{
 		Use:     "phrase <name>",
 		Short:   "Create an entry using a passphrase",
 		Aliases: []string{"passphrase"},
 		Example: example,
-		Args:    cmdutil.MustNotExist(db, cmdutil.Entry),
-		RunE:    runPhrase(db, r, &opts),
+		Args:    command_helper.MustNotExist(vault, command_helper.Entry),
+		RunE:    runPhrase(vault, r, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = phraseOptions{
@@ -56,13 +56,13 @@ func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
 	return cmd
 }
 
-func runPhrase(db *bolt.DB, r io.Reader, opts *phraseOptions) cmdutil.RunErrorFunction {
+func runPhrase(vault *bolt.DB, r io.Reader, opts *phraseOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
 		if opts.length < 1 {
-			return cmdutil.ErrInvalidLength
+			return command_helper.ErrInvalidLength
 		}
 
 		e, err := entryInput(r, name)
@@ -75,7 +75,7 @@ func runPhrase(db *bolt.DB, r io.Reader, opts *phraseOptions) cmdutil.RunErrorFu
 			return err
 		}
 
-		if err := entry.Create(db, e); err != nil {
+		if err := entry.Create(vault, e); err != nil {
 			return err
 		}
 
@@ -84,20 +84,20 @@ func runPhrase(db *bolt.DB, r io.Reader, opts *phraseOptions) cmdutil.RunErrorFu
 	}
 }
 
-func entryInput(r io.Reader, name string) (*pb.Entry, error) {
+func entryInput(r io.Reader, name string) (*protobuf.Entry, error) {
 	reader := bufio.NewReader(r)
 
 	username := terminal.ScanOneLine(reader, "Username")
 	url := terminal.ScanOneLine(reader, "URL")
-	expires := terminal.ScanOneLine(reader, "Expires [dd/mm/yy]")
+	expires := terminal.ScanOneLine(reader, "Expires [yyyy-mm-dd]")
 	notes := terminal.ScanMultipleLines(reader, "Notes")
 
-	exp, err := cmdutil.FormatExpires(expires)
+	exp, err := command_helper.FormatExpires(expires)
 	if err != nil {
 		return nil, err
 	}
 
-	entry := &pb.Entry{
+	entry := &protobuf.Entry{
 		Name:     name,
 		Username: username,
 		URL:      url,

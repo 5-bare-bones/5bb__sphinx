@@ -11,7 +11,7 @@ func init() {
 		Verb:  "export",
 		Level: registry.TierMaster,
 		New: func(c registry.BuildContext) *cobra.Command {
-			return NewCmd(c.DB)
+			return NewCmd(c.Vault)
 		},
 	})
 }

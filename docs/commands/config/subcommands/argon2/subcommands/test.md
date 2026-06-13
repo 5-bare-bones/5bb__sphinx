@@ -8,7 +8,7 @@ Test how is argon2 going to perform with the parameters passed.
 
 The Argon2id variant with 1 iteration and maximum available memory is recommended as a default setting for all environments. This setting is secure against side-channel attacks and maximizes adversarial costs on dedicated bruteforce hardware.
 
-> If one of the devices that will handle the database has lower than 1GB of memory, we recommend setting the memory according to that device's RAM availability.
+> If one of the devices that will handle the vault has lower than 1GB of memory, we recommend setting the memory according to that device's RAM availability.
 
 - Memory: amount of memory allowed for argon2 to use, the more memory the better. The value is represented in kibibytes, 1 kibibyte = 1024 bytes. Default is 1048576 kibibytes (1 GiB).
 

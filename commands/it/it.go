@@ -3,7 +3,7 @@ package it
 import (
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -23,7 +23,7 @@ sphinx it list -s -q
 sphinx sample`
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	return &cobra.Command{
 		Use:   "it <command|flags|name>",
 		Short: "Execute commands through an interactive prompt",
@@ -36,11 +36,11 @@ command and flags 		name
 name 				command and flags`,
 		Example:            example,
 		DisableFlagParsing: true,
-		RunE:               runIt(db),
+		RunE:               runIt(vault),
 	}
 }
 
-func runIt(db *bolt.DB) cmdutil.RunErrorFunction {
+func runIt(vault *bolt.DB) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		root := cmd.Root()
 		// Get rid of unnecessary information and reset in case we are inside a session
@@ -49,7 +49,7 @@ func runIt(db *bolt.DB) cmdutil.RunErrorFunction {
 
 		// We received nothing, request all
 		if len(args) == 0 {
-			arguments, err := requestCommands(db, root, nil)
+			arguments, err := requestCommands(vault, root, nil)
 			if err != nil {
 				return err
 			}
@@ -60,7 +60,7 @@ func runIt(db *bolt.DB) cmdutil.RunErrorFunction {
 		command, _, err := root.Find(args)
 		if err != nil || command == root {
 			// If the command does not exist or is the root, assume the user passed a name
-			arguments, err := gotName(db, root, args)
+			arguments, err := gotName(vault, root, args)
 			if err != nil {
 				return err
 			}
@@ -90,7 +90,7 @@ func runIt(db *bolt.DB) cmdutil.RunErrorFunction {
 			err := command.ValidateArgs([]string{name})
 			if err != nil || strings.Contains(command.Name(), "list") {
 				// Received commands+flags, request name
-				arguments, err := requestName(db, args)
+				arguments, err := requestName(vault, args)
 				if err != nil {
 					return err
 				}
@@ -103,7 +103,7 @@ func runIt(db *bolt.DB) cmdutil.RunErrorFunction {
 		}
 
 		// Pass on received command(s) and look for subcommands
-		arguments, err := requestCommands(db, command, args)
+		arguments, err := requestCommands(vault, command, args)
 		if err != nil {
 			return err
 		}
@@ -126,7 +126,7 @@ func execute(root *cobra.Command, args []string) error {
 	return root.Execute()
 }
 
-func requestCommands(db *bolt.DB, root *cobra.Command, receivedCmds []string) ([]string, error) {
+func requestCommands(vault *bolt.DB, root *cobra.Command, receivedCmds []string) ([]string, error) {
 	commands, err := selectCommands(root)
 	if err != nil {
 		return nil, err
@@ -143,11 +143,11 @@ func requestCommands(db *bolt.DB, root *cobra.Command, receivedCmds []string) ([
 	if len(receivedCmds) > 0 {
 		args = append(receivedCmds, args...)
 	}
-	return requestName(db, args)
+	return requestName(vault, args)
 }
 
 // args contains commands and flags.
-func requestName(db *bolt.DB, args []string) ([]string, error) {
+func requestName(vault *bolt.DB, args []string) ([]string, error) {
 	var (
 		name string
 		err  error
@@ -167,17 +167,17 @@ func requestName(db *bolt.DB, args []string) ([]string, error) {
 		name, err = inputName()
 
 	case contains("import"), contains("export"):
-		name, err = selectManager(db)
+		name, err = selectManager(vault)
 
 	case contains("file show"), contains("file touch"):
-		names, err := fileMultiselect(db)
+		names, err := fileMultiselect(vault)
 		if err != nil {
 			return nil, err
 		}
 		return append(args, names...), nil
 
 	case contains("file move"):
-		names, err := fileMvNames(db)
+		names, err := fileMvNames(vault)
 		if err != nil {
 			return nil, err
 		}
@@ -190,7 +190,7 @@ func requestName(db *bolt.DB, args []string) ([]string, error) {
 			if contains(cmd) {
 				// Skip "config edit" as it doesn't need a name
 				if args[0] != "config" {
-					name, err = selectName(db, args)
+					name, err = selectName(vault, args)
 					break
 				}
 			}
@@ -206,7 +206,7 @@ func requestName(db *bolt.DB, args []string) ([]string, error) {
 }
 
 // gotName is executed when the user already provided the name, commands and flags are requested only.
-func gotName(db *bolt.DB, root *cobra.Command, args []string) ([]string, error) {
+func gotName(vault *bolt.DB, root *cobra.Command, args []string) ([]string, error) {
 	var (
 		name  []string
 		flags []string
@@ -233,7 +233,7 @@ func gotName(db *bolt.DB, root *cobra.Command, args []string) ([]string, error) 
 	}
 
 	if len(name) == 0 {
-		name, err = requestName(db, commands)
+		name, err = requestName(vault, commands)
 		if err != nil {
 			return nil, err
 		}

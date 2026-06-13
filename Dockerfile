@@ -15,8 +15,8 @@ RUN CGO_ENABLED=0 go install -ldflags="-s -w" .
 # ---------------------------------------------
 
 FROM alpine:3.22
-
-RUN apk add --update --no-cache vim
+micro
+RUN apk add --update --no-cache micro
 
 COPY --from=builder /go/bin/sphinx /usr/bin/
 

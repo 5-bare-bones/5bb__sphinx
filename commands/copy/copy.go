@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -28,15 +28,15 @@ type copyOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := copyOptions{}
 	cmd := &cobra.Command{
 		Use:     "copy <name>",
 		Short:   "Copy entry credentials to the clipboard",
 		Aliases: []string{"cp"},
 		Example: example,
-		Args:    cmdutil.MustExist(db, cmdutil.Entry),
-		RunE:    runCopy(db, &opts),
+		Args:    command_helper.MustExist(vault, command_helper.Entry),
+		RunE:    runCopy(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = copyOptions{}
@@ -51,22 +51,22 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runCopy(db *bolt.DB, opts *copyOptions) cmdutil.RunErrorFunction {
+func runCopy(vault *bolt.DB, opts *copyOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
-		e, err := entry.Get(db, name)
+		e, err := entry.Get(vault, name)
 		if err != nil {
 			return err
 		}
 
 		if opts.all {
-			if err := cmdutil.WriteClipboard(cmd, opts.timeout, "Username", e.Username); err != nil {
+			if err := command_helper.WriteClipboard(cmd, opts.timeout, "Username", e.Username); err != nil {
 				return err
 			}
 
-			return cmdutil.WriteClipboard(cmd, opts.timeout, "Password", e.Password)
+			return command_helper.WriteClipboard(cmd, opts.timeout, "Password", e.Password)
 		}
 
 		field := "Password"
@@ -76,6 +76,6 @@ func runCopy(db *bolt.DB, opts *copyOptions) cmdutil.RunErrorFunction {
 			value = e.Username
 		}
 
-		return cmdutil.WriteClipboard(cmd, opts.timeout, field, value)
+		return command_helper.WriteClipboard(cmd, opts.timeout, field, value)
 	}
 }

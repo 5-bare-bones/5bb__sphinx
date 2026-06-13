@@ -16,9 +16,9 @@ dist
 .idea
 
 # Development files
-kure_dev
-kure.yaml
-kure.db
+sphinx_dev
+sphinx.yaml
+sphinx.db
 
 # sphinx dev + per-tier build artifacts (make build / build-all / build-<tier>)
 sphinx_dev

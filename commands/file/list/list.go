@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/orderedmap"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/tree"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -44,15 +44,15 @@ type listOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := listOptions{}
 	cmd := &cobra.Command{
 		Use:     "list <name>",
 		Aliases: []string{"ls"},
 		Short:   "List files",
 		Example: example,
-		Args:    cmdutil.MustExistList(db, cmdutil.File),
-		RunE:    runList(db, &opts),
+		Args:    command_helper.MustExistList(vault, command_helper.File),
+		RunE:    runList(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = listOptions{}
@@ -64,14 +64,14 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runList(db *bolt.DB, opts *listOptions) cmdutil.RunErrorFunction {
+func runList(vault *bolt.DB, opts *listOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
 		// List all
 		if name == "" {
-			files, err := file.ListNames(db)
+			files, err := file.ListNames(vault)
 			if err != nil {
 				return err
 			}
@@ -82,7 +82,7 @@ func runList(db *bolt.DB, opts *listOptions) cmdutil.RunErrorFunction {
 
 		// Filter by name
 		if opts.filter {
-			files, err := file.ListNames(db)
+			files, err := file.ListNames(vault)
 			if err != nil {
 				return err
 			}
@@ -108,7 +108,7 @@ func runList(db *bolt.DB, opts *listOptions) cmdutil.RunErrorFunction {
 		}
 
 		// List one
-		f, err := file.GetCheap(db, name)
+		f, err := file.GetCheap(vault, name)
 		if err != nil {
 			return err
 		}
@@ -118,7 +118,7 @@ func runList(db *bolt.DB, opts *listOptions) cmdutil.RunErrorFunction {
 	}
 }
 
-func printFile(f *pb.FileCheap) {
+func printFile(f *protobuf.FileCheap) {
 	parts := strings.Split(f.Name, "/")
 	path := strings.Join(parts[:len(parts)-1], "/")
 	bytes := f.Size
@@ -145,5 +145,5 @@ func printFile(f *pb.FileCheap) {
 		mp.Set("Updated at", updatedAt.String())
 	}
 
-	fmt.Println(cmdutil.BuildBox(f.Name, mp))
+	fmt.Println(command_helper.BuildBox(f.Name, mp))
 }

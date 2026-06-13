@@ -1,7 +1,7 @@
-database:
+vault:
   path: test
 
-editor: vim
+editor: micro
 
 session:
   prefix: sphinx >

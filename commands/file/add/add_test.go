@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAdd(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc      string
@@ -49,7 +49,7 @@ func TestAdd(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db, nil)
+	cmd := NewCmd(vault, nil)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -74,14 +74,14 @@ func TestAdd(t *testing.T) {
 		expectedContent := []byte("note content")
 		buf := bytes.NewBufferString("note content<\n")
 
-		cmd := NewCmd(db, buf)
+		cmd := NewCmd(vault, buf)
 		cmd.SetArgs([]string{name})
 		cmd.Flags().Set("note", "true")
 
 		err := cmd.Execute()
 		assert.NoError(t, err, "Failed creating the note")
 
-		file, err := file.Get(db, fmt.Sprintf("notes/%s.txt", name))
+		file, err := file.Get(vault, fmt.Sprintf("notes/%s.txt", name))
 		assert.NoError(t, err, "Couldn't find the note")
 
 		assert.Equal(t, file.Content, expectedContent)
@@ -89,9 +89,9 @@ func TestAdd(t *testing.T) {
 }
 
 func TestAddErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	err := file.Create(db, &pb.File{Name: "already exists.txt"})
+	err := file.Create(vault, &protobuf.File{Name: "already exists.txt"})
 	assert.NoError(t, err, "Failed creating the file")
 
 	cases := []struct {
@@ -130,7 +130,7 @@ func TestAddErrors(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db, nil)
+	cmd := NewCmd(vault, nil)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {

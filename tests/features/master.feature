@@ -20,4 +20,4 @@ Feature: Master tier
   Scenario: restore help
     When I run sphinx "restore --help"
     Then the exit code is 0
-    And stdout contains "Restore the database"
+    And stdout contains "Restore the vault"

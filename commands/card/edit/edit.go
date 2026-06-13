@@ -9,11 +9,11 @@ import (
 	"os/exec"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/sig"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -32,7 +32,7 @@ type editOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := editOptions{}
 	cmd := &cobra.Command{
 		Use:   "edit <name>",
@@ -41,8 +41,8 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 
 If the name is edited, sphinx will remove the old card and create one with the new name.`,
 		Example: example,
-		Args:    cmdutil.MustExist(db, cmdutil.Card),
-		RunE:    runEdit(db, &opts),
+		Args:    command_helper.MustExist(vault, command_helper.Card),
+		RunE:    runEdit(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = editOptions{}
@@ -54,25 +54,25 @@ If the name is edited, sphinx will remove the old card and create one with the n
 	return cmd
 }
 
-func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunErrorFunction {
+func runEdit(vault *bolt.DB, opts *editOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
-		oldCard, err := card.Get(db, name)
+		oldCard, err := card.Get(vault, name)
 		if err != nil {
 			return err
 		}
 
 		if opts.interactive {
-			return useTextEditor(db, oldCard)
+			return useTextEditor(vault, oldCard)
 		}
 
-		return useStdin(db, os.Stdin, oldCard)
+		return useStdin(vault, os.Stdin, oldCard)
 	}
 }
 
-func createTempFile(c *pb.Card) (string, error) {
+func createTempFile(c *protobuf.Card) (string, error) {
 	f, err := os.CreateTemp("", "*.json")
 	if err != nil {
 		return "", errors.Wrap(err, "creating temporary file")
@@ -95,8 +95,8 @@ func createTempFile(c *pb.Card) (string, error) {
 }
 
 // readTmpFile reads the modified file and formats the card.
-func readTmpFile(filename string) (*pb.Card, error) {
-	var c pb.Card
+func readTmpFile(filename string) (*protobuf.Card, error) {
+	var c protobuf.Card
 
 	f, err := os.Open(filename)
 	if err != nil {
@@ -113,15 +113,15 @@ func readTmpFile(filename string) (*pb.Card, error) {
 
 // updateCard takes the name of the card that's being edited to check if the name was
 // changed. If it was, it will remove the old one.
-func updateCard(db *bolt.DB, name string, c *pb.Card) error {
+func updateCard(vault *bolt.DB, name string, c *protobuf.Card) error {
 	if c.Name == "" {
-		return cmdutil.ErrInvalidName
+		return command_helper.ErrInvalidName
 	}
 
-	name = cmdutil.NormalizeName(name)
-	c.Name = cmdutil.NormalizeName(c.Name)
+	name = command_helper.NormalizeName(name)
+	c.Name = command_helper.NormalizeName(c.Name)
 
-	if err := card.Update(db, name, c); err != nil {
+	if err := card.Update(vault, name, c); err != nil {
 		return err
 	}
 
@@ -129,7 +129,7 @@ func updateCard(db *bolt.DB, name string, c *pb.Card) error {
 	return nil
 }
 
-func useStdin(db *bolt.DB, r io.Reader, oldCard *pb.Card) error {
+func useStdin(vault *bolt.DB, r io.Reader, oldCard *protobuf.Card) error {
 	fmt.Println("Type '-' to clear the field or leave blank to use the current value")
 	reader := bufio.NewReader(r)
 
@@ -143,7 +143,7 @@ func useStdin(db *bolt.DB, r io.Reader, oldCard *pb.Card) error {
 		return value
 	}
 
-	newCard := &pb.Card{
+	newCard := &protobuf.Card{
 		Name:         scanln("Name", oldCard.Name),
 		Type:         scanln("Type", oldCard.Type),
 		Number:       scanln("Number", oldCard.Number),
@@ -159,11 +159,11 @@ func useStdin(db *bolt.DB, r io.Reader, oldCard *pb.Card) error {
 	}
 	newCard.Notes = notes
 
-	return updateCard(db, oldCard.Name, newCard)
+	return updateCard(vault, oldCard.Name, newCard)
 }
 
-func useTextEditor(db *bolt.DB, oldCard *pb.Card) error {
-	editor := cmdutil.SelectEditor()
+func useTextEditor(vault *bolt.DB, oldCard *protobuf.Card) error {
+	editor := command_helper.SelectEditor()
 	bin, err := exec.LookPath(editor)
 	if err != nil {
 		return errors.Errorf("executable %q not found", editor)
@@ -174,8 +174,8 @@ func useTextEditor(db *bolt.DB, oldCard *pb.Card) error {
 		return err
 	}
 
-	sig.Signal.AddCleanup(func() error { return cmdutil.Erase(filename) })
-	defer cmdutil.Erase(filename)
+	sig.Signal.AddCleanup(func() error { return command_helper.Erase(filename) })
+	defer command_helper.Erase(filename)
 
 	// Open the temporary file with the selected text editor
 	edit := exec.Command(bin, filename)
@@ -188,7 +188,7 @@ func useTextEditor(db *bolt.DB, oldCard *pb.Card) error {
 
 	done := make(chan struct{}, 1)
 	errCh := make(chan error, 1)
-	go cmdutil.WatchFile(filename, done, errCh)
+	go command_helper.WatchFile(filename, done, errCh)
 
 	// Block until an event is received or an error occurs
 	select {
@@ -216,5 +216,5 @@ func useTextEditor(db *bolt.DB, oldCard *pb.Card) error {
 	newCard.ExpireDate = rmTabs(newCard.ExpireDate)
 	newCard.Notes = rmTabs(newCard.Notes)
 
-	return updateCard(db, oldCard.Name, newCard)
+	return updateCard(vault, oldCard.Name, newCard)
 }

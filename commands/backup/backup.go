@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/config"
 	"github.com/5-bare-bones/5bb__sphinx/sig"
 
@@ -24,11 +24,11 @@ const example = `
 * Create a file backup
 sphinx backup --path path/to/file
 
-* Serve the database on a local server, port 7777
+* Serve the vault on a local server, port 7777
 sphinx backup --http --port 7777
 
-* Download database
-curl localhost:7777 > database_name`
+* Download vault
+curl localhost:7777 > vault_name`
 
 type backupOptions struct {
 	path  string
@@ -37,13 +37,13 @@ type backupOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := backupOptions{}
 	cmd := &cobra.Command{
 		Use:     "backup",
-		Short:   "Create database backup",
+		Short:   "Create vault backup",
 		Example: example,
-		RunE:    opts.runBackup(db),
+		RunE:    opts.runBackup(vault),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = backupOptions{
@@ -53,7 +53,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	}
 
 	f := cmd.Flags()
-	f.BoolVar(&opts.httpB, "http", false, "serve database file on a local server")
+	f.BoolVar(&opts.httpB, "http", false, "serve vault file on a local server")
 	f.StringVar(&opts.path, "path", "", "destination file path")
 	f.Uint16Var(&opts.port, "port", 8080, "server port")
 
@@ -62,18 +62,18 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func (opts *backupOptions) runBackup(db *bolt.DB) cmdutil.RunErrorFunction {
+func (opts *backupOptions) runBackup(vault *bolt.DB) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.httpB {
-			return serveFile(db, opts.port)
+			return serveFile(vault, opts.port)
 		}
 
-		return fileBackup(db, opts.path)
+		return fileBackup(vault, opts.path)
 	}
 }
 
 // serveFile serves the file on localhost.
-func serveFile(db *bolt.DB, port uint16) error {
+func serveFile(vault *bolt.DB, port uint16) error {
 	if port == 0 {
 		return errors.New("invalid port")
 	}
@@ -103,9 +103,9 @@ func serveFile(db *bolt.DB, port uint16) error {
 	// called multiple times inside a session
 	var once sync.Once
 	once.Do(func() {
-		http.HandleFunc("/", httpBackup(db))
+		http.HandleFunc("/", httpBackup(vault))
 	})
-	fmt.Printf("Serving database on http://localhost:%d (Press Ctrl+C to quit)\n", port)
+	fmt.Printf("Serving vault on http://localhost:%d (Press Ctrl+C to quit)\n", port)
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return errors.Wrap(err, "starting server")
@@ -114,10 +114,10 @@ func serveFile(db *bolt.DB, port uint16) error {
 	return nil
 }
 
-// fileBackup writes the database to a new file.
-func fileBackup(db *bolt.DB, path string) error {
+// fileBackup writes the vault to a new file.
+func fileBackup(vault *bolt.DB, path string) error {
 	if path == "" {
-		return cmdutil.ErrInvalidPath
+		return command_helper.ErrInvalidPath
 	}
 
 	dir := filepath.Dir(path)
@@ -132,15 +132,15 @@ func fileBackup(db *bolt.DB, path string) error {
 
 	newDB, err := bolt.Open(filepath.Base(path), 0o600, nil)
 	if err != nil {
-		return errors.Wrap(err, "opening database backup")
+		return errors.Wrap(err, "opening vault backup")
 	}
 
-	if err := bolt.Compact(newDB, db, 0); err != nil {
-		return errors.Wrap(err, "copying database backup")
+	if err := bolt.Compact(newDB, vault, 0); err != nil {
+		return errors.Wrap(err, "copying vault backup")
 	}
 
 	if err := newDB.Close(); err != nil {
-		return errors.Wrap(err, "closing database backup")
+		return errors.Wrap(err, "closing vault backup")
 	}
 
 	abs, _ := filepath.Abs(path)
@@ -148,18 +148,18 @@ func fileBackup(db *bolt.DB, path string) error {
 	return nil
 }
 
-// httpBackup writes a consistent view of the database to a http endpoint.
-func httpBackup(db *bolt.DB) http.HandlerFunc {
-	name := filepath.Base(config.GetString("database.path"))
+// httpBackup writes a consistent view of the vault to a http endpoint.
+func httpBackup(vault *bolt.DB) http.HandlerFunc {
+	name := filepath.Base(config.GetString("vault.path"))
 	disposition := fmt.Sprintf(`attachment; filename=%q`, name)
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := db.View(func(tx *bolt.Tx) error {
+		err := vault.View(func(tx *bolt.Tx) error {
 			w.Header().Set("Content-Type", "application/octet-stream")
 			w.Header().Set("Content-Disposition", disposition)
 			w.Header().Set("Content-Length", strconv.Itoa(int(tx.Size())))
 			if _, err := tx.WriteTo(w); err != nil {
-				return errors.Wrap(err, "writing the database")
+				return errors.Wrap(err, "writing the vault")
 			}
 
 			return nil
@@ -170,11 +170,11 @@ func httpBackup(db *bolt.DB) http.HandlerFunc {
 	}
 }
 
-// writeTo writes the entire database to a writer.
-func writeTo(db *bolt.DB, w io.Writer) error {
-	return db.View(func(tx *bolt.Tx) error {
+// writeTo writes the entire vault to a writer.
+func writeTo(vault *bolt.DB, w io.Writer) error {
+	return vault.View(func(tx *bolt.Tx) error {
 		if _, err := tx.WriteTo(w); err != nil {
-			return errors.Wrap(err, "writing the database")
+			return errors.Wrap(err, "writing the vault")
 		}
 		return nil
 	})

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/sig"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -21,7 +21,7 @@ import (
 
 const example = `
 * Edit a file
-sphinx file edit Sample -e nvim
+sphinx file edit Sample --editor micro
 
 * Write a file's content to a temporary file and log its path
 sphinx file edit Sample -l`
@@ -32,7 +32,7 @@ type editOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := editOptions{}
 	cmd := &cobra.Command{
 		Use:   "edit <name>",
@@ -45,8 +45,8 @@ Notes:
 	- Some editors flush the changes to the disk when closed, sphinx won't notice any modifications until then.
 	- Modifying the file with a different program will prevent sphinx from erasing the file as its being blocked by another process.`,
 		Example: example,
-		Args:    cmdutil.MustExist(db, cmdutil.File),
-		RunE:    runEdit(db, &opts),
+		Args:    command_helper.MustExist(vault, command_helper.File),
+		RunE:    runEdit(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = editOptions{}
@@ -60,15 +60,15 @@ Notes:
 	return cmd
 }
 
-func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunErrorFunction {
+func runEdit(vault *bolt.DB, opts *editOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
 		var bin string
 		if !opts.log {
 			if opts.editor == "" {
-				opts.editor = cmdutil.SelectEditor()
+				opts.editor = command_helper.SelectEditor()
 			}
 			var err error
 			bin, err = exec.LookPath(opts.editor)
@@ -77,7 +77,7 @@ func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunErrorFunction {
 			}
 		}
 
-		oldFile, err := file.Get(db, name)
+		oldFile, err := file.Get(vault, name)
 		if err != nil {
 			return err
 		}
@@ -86,8 +86,8 @@ func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunErrorFunction {
 		if err != nil {
 			return errors.Wrap(err, "creating temporary file")
 		}
-		sig.Signal.AddCleanup(func() error { return cmdutil.Erase(filename) })
-		defer cmdutil.Erase(filename)
+		sig.Signal.AddCleanup(func() error { return command_helper.Erase(filename) })
+		defer command_helper.Erase(filename)
 
 		if opts.log {
 			logTempFilename(filename)
@@ -100,7 +100,7 @@ func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunErrorFunction {
 			}
 		}
 
-		if err := update(db, oldFile, filename); err != nil {
+		if err := update(vault, oldFile, filename); err != nil {
 			return err
 		}
 
@@ -154,7 +154,7 @@ func runEditor(bin, filename, editor string) error {
 func watchFile(filename string) error {
 	done := make(chan struct{}, 1)
 	errCh := make(chan error, 1)
-	go cmdutil.WatchFile(filename, done, errCh)
+	go command_helper.WatchFile(filename, done, errCh)
 
 	// Block until an event is received or an error occurs
 	select {
@@ -168,14 +168,14 @@ func watchFile(filename string) error {
 }
 
 // update reads the edited content and updates the file record.
-func update(db *bolt.DB, old *pb.File, filename string) error {
+func update(vault *bolt.DB, old *protobuf.File, filename string) error {
 	content, err := os.ReadFile(filename)
 	if err != nil {
 		return errors.Wrap(err, "reading file")
 	}
 	content = bytes.TrimSpace(content)
 
-	new := &pb.File{
+	new := &protobuf.File{
 		Name:      old.Name,
 		Content:   content,
 		Size:      int64(len(content)),
@@ -183,7 +183,7 @@ func update(db *bolt.DB, old *pb.File, filename string) error {
 		UpdatedAt: time.Now().Unix(),
 	}
 
-	if err := file.Create(db, new); err != nil {
+	if err := file.Create(vault, new); err != nil {
 		return errors.Wrap(err, "updating file")
 	}
 

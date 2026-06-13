@@ -58,7 +58,7 @@ func selectQs(message, help string, options []string) []*survey.Question {
 				Help:     help,
 				Options:  options,
 				PageSize: pageSize,
-				VimMode:  true,
+				VimMode:  true, //TODO: remove VimMode
 			},
 		},
 	}

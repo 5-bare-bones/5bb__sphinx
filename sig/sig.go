@@ -68,7 +68,7 @@ func (s *sig) Kill() {
 // If keepAlive is true it won't exit. Cleanup functions are executed in any case.
 //
 // db.Close() will block waiting for open transactions to finish before closing.
-func (s *sig) Listen(db *bolt.DB) {
+func (s *sig) Listen(vault *bolt.DB) {
 	// interrupt gets updated on each call to Listen
 	s.interrupt = make(chan os.Signal, 1)
 	signal.Notify(s.interrupt, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
@@ -87,11 +87,11 @@ func (s *sig) Listen(db *bolt.DB) {
 		if atomic.LoadInt32(&s.keepAlive) == 1 {
 			// Reset keep alive state
 			atomic.StoreInt32(&s.keepAlive, 0)
-			s.Listen(db)
+			s.Listen(vault)
 			return
 		}
 
-		db.Close()
+		vault.Close()
 		fmt.Println("\nExiting...")
 		memguard.SafeExit(1)
 	}()

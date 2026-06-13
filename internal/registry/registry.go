@@ -60,13 +60,13 @@ func (t Tier) String() string {
 }
 
 // BuildContext carries everything any command constructor might need. It exists to
-// collapse the several historical NewCmd signatures ((db), (db, io.Reader),
-// (db, io.Writer), ()) behind one uniform Constructor type so that every
+// collapse the several historical NewCmd signatures ((vault), (vault, io.Reader),
+// (vault, io.Writer), ()) behind one uniform Constructor type so that every
 // command registers identically.
 type BuildContext struct {
-	DB  *bolt.DB
-	In  io.Reader
-	Out io.Writer
+	Vault *bolt.DB
+	In    io.Reader
+	Out   io.Writer
 }
 
 // Constructor builds a single cobra command from a BuildCtx.
@@ -90,7 +90,7 @@ type Entry struct {
 	Noun string
 	// Level is the tier at which the command first appears. Metadata only.
 	Level Tier
-	// Stateless marks commands that must run without opening the database. It
+	// Stateless marks commands that must run without opening the vault. It
 	// replaces the previously hard-coded statelessCommands map and stays
 	// tier-correct automatically: a command that is not compiled in cannot be
 	// marked stateless.

@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/exec"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/config"
 
 	"github.com/pkg/errors"
@@ -16,7 +16,7 @@ const example = `
 sphinx config edit`
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	return &cobra.Command{
 		Use:     "edit",
 		Short:   "Edit the current configuration file",
@@ -25,7 +25,7 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	}
 }
 
-func runEdit() cmdutil.RunErrorFunction {
+func runEdit() command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		path := config.Filename()
 
@@ -35,7 +35,7 @@ func runEdit() cmdutil.RunErrorFunction {
 		}
 		defer f.Close()
 
-		editor := cmdutil.SelectEditor()
+		editor := command_helper.SelectEditor()
 		bin, err := exec.LookPath(editor)
 		if err != nil {
 			return errors.Errorf("%q executable not found", editor)

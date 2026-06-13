@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/exec"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/config"
 
 	"github.com/pkg/errors"
@@ -38,17 +38,17 @@ func NewCmd() *cobra.Command {
 	return cmd
 }
 
-func runCreate(opts *createOptions) cmdutil.RunErrorFunction {
+func runCreate(opts *createOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.path == "" {
-			return cmdutil.ErrInvalidPath
+			return command_helper.ErrInvalidPath
 		}
 
 		if err := config.WriteStruct(opts.path); err != nil {
 			return err
 		}
 
-		editor := cmdutil.SelectEditor()
+		editor := command_helper.SelectEditor()
 		bin, err := exec.LookPath(editor)
 		if err != nil {
 			return errors.Errorf("%q executable not found", editor)

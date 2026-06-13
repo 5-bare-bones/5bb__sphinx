@@ -40,29 +40,29 @@ func main() {
 		os.Exit(0)
 	}
 
-	dbPath := filepath.Clean(config.GetString("database.path"))
-	db, err := bolt.Open(dbPath, 0o600, &bolt.Options{Timeout: 200 * time.Millisecond})
+	vaultPath := filepath.Clean(config.GetString("vault.path"))
+	vault, err := bolt.Open(vaultPath, 0o600, &bolt.Options{Timeout: 200 * time.Millisecond})
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "couldn't open the database:", err)
+		fmt.Fprintln(os.Stderr, "couldn't open the vault:", err)
 		os.Exit(1)
 	}
 
-	if err := auth.Login(db); err != nil {
+	if err := auth.Login(vault); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
-		db.Close()
+		vault.Close()
 		memguard.SafeExit(1)
 	}
 
 	// Listen for a signal to release resources and delete sensitive information
-	sig.Signal.Listen(db)
+	sig.Signal.Listen(vault)
 
-	if err := root.NewCmd(db).Execute(); err != nil {
+	if err := root.NewCmd(vault).Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
-		db.Close()
+		vault.Close()
 		memguard.SafeExit(1)
 	}
 
-	db.Close()
+	vault.Close()
 	memguard.SafeExit(0)
 }
 

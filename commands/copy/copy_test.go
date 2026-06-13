@@ -4,14 +4,14 @@ import (
 	"strconv"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/config"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	bolt "go.etcd.io/bbolt"
 
 	"github.com/atotto/clipboard"
 	"github.com/stretchr/testify/assert"
-	bolt "go.etcd.io/bbolt"
 )
 
 func TestCopy(t *testing.T) {
@@ -19,8 +19,8 @@ func TestCopy(t *testing.T) {
 		t.Skip("No clipboard utilities available")
 	}
 
-	db := cmdutil.SetContext(t)
-	e := createEntry(t, db)
+	vault := command_helper.SetContext(t)
+	e := createEntry(t, vault)
 
 	cases := []struct {
 		desc         string
@@ -44,7 +44,7 @@ func TestCopy(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	f := cmd.Flags()
 
 	for _, tc := range cases {
@@ -68,11 +68,11 @@ func TestCopyWithConfigTimeout(t *testing.T) {
 	if clipboard.Unsupported {
 		t.Skip("No clipboard utilities available")
 	}
-	db := cmdutil.SetContext(t)
-	e := createEntry(t, db)
+	vault := command_helper.SetContext(t)
+	e := createEntry(t, vault)
 
 	config.Set("clipboard.timeout", "1ns")
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	cmd.SetArgs([]string{e.Name})
 
 	err := cmd.Execute()
@@ -85,7 +85,7 @@ func TestCopyWithConfigTimeout(t *testing.T) {
 }
 
 func TestCopyErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc string
@@ -97,7 +97,7 @@ func TestCopyErrors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			cmd := NewCmd(db)
+			cmd := NewCmd(vault)
 			cmd.SetArgs([]string{tc.name})
 
 			err := cmd.Execute()
@@ -110,16 +110,16 @@ func TestPostRun(t *testing.T) {
 	NewCmd(nil).PostRun(nil, nil)
 }
 
-func createEntry(t *testing.T, db *bolt.DB) *pb.Entry {
+func createEntry(t *testing.T, vault *bolt.DB) *protobuf.Entry {
 	t.Helper()
 
-	e := &pb.Entry{
+	e := &protobuf.Entry{
 		Name:     "test",
 		Username: "Go",
 		Password: "Gopher",
 		Expires:  "Never",
 	}
-	err := entry.Create(db, e)
+	err := entry.Create(vault, e)
 	assert.NoError(t, err)
 
 	return e

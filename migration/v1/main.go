@@ -9,9 +9,9 @@ import (
 
 	"github.com/5-bare-bones/5bb__sphinx/auth"
 	"github.com/5-bare-bones/5bb__sphinx/config"
-	dbutil "github.com/5-bare-bones/5bb__sphinx/db"
-	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	vault_helper "github.com/5-bare-bones/5bb__sphinx/vault"
+	"github.com/5-bare-bones/5bb__sphinx/vault/bucket"
 
 	"github.com/pkg/errors"
 	bolt "go.etcd.io/bbolt"
@@ -30,27 +30,27 @@ func main() {
 		log.Fatalf("couldn't initialize the configuration: %v", err)
 	}
 
-	dbPath := filepath.Clean(config.GetString("database.path"))
-	db, err := bolt.Open(dbPath, 0o600, &bolt.Options{Timeout: 200 * time.Millisecond})
+	vaultPath := filepath.Clean(config.GetString("vault.path"))
+	vault, err := bolt.Open(vaultPath, 0o600, &bolt.Options{Timeout: 200 * time.Millisecond})
 	if err != nil {
-		log.Fatalf("couldn't open the database: %v", err)
+		log.Fatalf("couldn't open the vault: %v", err)
 	}
 
-	if err := auth.Login(db); err != nil {
+	if err := auth.Login(vault); err != nil {
 		log.Fatalf("couldn't log in: %v", err)
 	}
 
-	if err := xorNames(db, os.Stdin); err != nil {
+	if err := xorNames(vault, os.Stdin); err != nil {
 		log.Fatalf("couldn't xor names: %v", err)
 	}
 }
 
-func xorNames(db *bolt.DB, r io.Reader) error {
+func xorNames(vault *bolt.DB, r io.Reader) error {
 	if !terminal.Confirm(r, confMessage) {
 		return nil
 	}
 
-	tx, err := db.Begin(true)
+	tx, err := vault.Begin(true)
 	if err != nil {
 		return errors.Wrap(err, "starting transaction")
 	}
@@ -65,7 +65,7 @@ func xorNames(db *bolt.DB, r io.Reader) error {
 		// The bucket mustn't be modified inside the loop; this will result in undefined behavior
 		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
 			mp[string(k)] = record{
-				key:   dbutil.XorName(k),
+				key:   vault_helper.XorName(k),
 				value: v,
 			}
 		}

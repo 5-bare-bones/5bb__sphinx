@@ -7,33 +7,33 @@ import (
 	"os"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 	bolt "go.etcd.io/bbolt"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBackupFile(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 	filename := "backup-test"
 	name := "test"
 
 	t.Cleanup(func() {
 		err := os.Remove(filename)
-		assert.NoError(t, err, "Failed removing the database backup")
+		assert.NoError(t, err, "Failed removing the vault backup")
 	})
 
-	err := entry.Create(db, &pb.Entry{Name: name})
+	err := entry.Create(vault, &protobuf.Entry{Name: name})
 	assert.NoError(t, err)
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	f := cmd.Flags()
 	f.Set("path", filename)
 
 	err = cmd.Execute()
-	assert.NoError(t, err, "Failed creating the database backup")
+	assert.NoError(t, err, "Failed creating the vault backup")
 
 	newDB, err := bolt.Open(filename, 0o600, bolt.DefaultOptions)
 	assert.NoError(t, err)
@@ -48,13 +48,13 @@ func TestBackupFile(t *testing.T) {
 }
 
 func TestBackupServer(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	rec := httptest.NewRecorder()
 	req, err := http.NewRequest("GET", "localhost:4000/", nil)
 	assert.NoError(t, err, "Failed sending the request")
 
-	hf := httpBackup(db)
+	hf := httpBackup(vault)
 	hf.ServeHTTP(rec, req)
 
 	res := rec.Result()
@@ -66,7 +66,7 @@ func TestBackupServer(t *testing.T) {
 }
 
 func TestBackupErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc string
@@ -94,7 +94,7 @@ func TestBackupErrors(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -110,11 +110,11 @@ func TestBackupErrors(t *testing.T) {
 }
 
 func TestWriteTo(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	var buf bytes.Buffer
-	err := writeTo(db, &buf)
-	assert.NoError(t, err, "Failed writing database")
+	err := writeTo(vault, &buf)
+	assert.NoError(t, err, "Failed writing vault")
 
 	assert.NotEqual(t, buf.Len(), 0)
 }

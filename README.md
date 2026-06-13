@@ -11,7 +11,7 @@ Password manager for the command-line that aims to offer a secure and private wa
 - **Private:** Self-hosted and completely offline, no connection is established with 3rd parties.
 - **Secure:** Each record is encrypted using **AES-GCM** with 256 bit key and a **unique** password derived using Argon2 (**id** version). The user's master password is **never** stored on disk, it's encrypted and temporarily held **in-memory** inside a protected buffer, which is destroyed immediately after use.
 - **Sessions:** Run multiple commands by entering the master password only once. They support setting a timeout and running custom scripts.
-- **Portable:** Both sphinx and its database compile to binary files and they can be easily carried around in an external device.
+- **Portable:** Both sphinx and its vault compile to binary files and they can be easily carried around in an external device.
 - **Easy-to-use:** Intuitive, does not require advanced technical skills.
 
 ## Usage
@@ -91,7 +91,7 @@ make install
 
 ## Configuration
 
-Out-of-the-box sphinx needs no configuration, it creates a file with the default configuration and the database at:
+Out-of-the-box sphinx needs no configuration, it creates a file with the default configuration and the vault at:
 
 - **Linux, BSD**: `$HOME/.kure`
 - **Darwin**: `$HOME/.kure` or `/.kure`

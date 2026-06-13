@@ -25,15 +25,15 @@ Generate a random passphrase.
 
 Generate a passphrase without a list (default):
 ```
-sphinx gen phrase -l 6
+sphinx gen phrase --length 6
 ```
 
 Generate a passphrase with word list:
 ```
-sphinx gen phrase -l 7 -L WordList
+sphinx gen phrase --length 7 --list WordList
 ```
 
 Generate a passphrase with syllable list:
 ```
-sphinx add phrase -l 12 -s = -L SyllableList
+sphinx gen phrase --length 12 --list SyllableList
 ```

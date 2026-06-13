@@ -4,19 +4,19 @@ import (
 	"bytes"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDelete(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	names := []string{"test.txt", "directory/test.txt", "kure.db", "kure.yaml"}
 	for _, name := range names {
-		err := file.Create(db, &pb.File{Name: name})
+		err := file.Create(vault, &protobuf.File{Name: name})
 		assert.NoErrorf(t, err, "Failed creating %q", name)
 	}
 
@@ -50,7 +50,7 @@ func TestDelete(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			buf := bytes.NewBufferString(tc.input)
-			cmd := NewCmd(db, buf)
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs(tc.names)
 
 			err := cmd.Execute()
@@ -58,7 +58,7 @@ func TestDelete(t *testing.T) {
 
 			if tc.input == "y" {
 				for _, name := range tc.names {
-					_, err := file.GetCheap(db, name)
+					_, err := file.GetCheap(vault, name)
 					assert.Error(t, err)
 				}
 			}
@@ -67,10 +67,10 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	name := "random"
-	err := file.Create(db, &pb.File{Name: name})
+	err := file.Create(vault, &protobuf.File{Name: name})
 	assert.NoErrorf(t, err, "Failed creating %q", name)
 
 	cases := []struct {
@@ -96,7 +96,7 @@ func TestDeleteErrors(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			buf := bytes.NewBufferString(tc.confirmation)
-			cmd := NewCmd(db, buf)
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs(tc.names)
 
 			err := cmd.Execute()

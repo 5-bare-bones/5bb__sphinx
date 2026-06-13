@@ -5,47 +5,47 @@ import (
 	"strings"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/stretchr/testify/assert"
 	bolt "go.etcd.io/bbolt"
 )
 
 func TestMv(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	oldName := "test.txt"
 	newName := "renamed-test" // omit extension on purpose
-	createFile(t, db, oldName)
+	createFile(t, vault, oldName)
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	cmd.SetArgs([]string{oldName, newName})
 
 	err := cmd.Execute()
 	assert.NoError(t, err)
 
-	_, err = file.GetCheap(db, newName+".txt")
+	_, err = file.GetCheap(vault, newName+".txt")
 	assert.NoError(t, err, "Failed getting the renamed file")
 }
 
 func TestMvDir(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	oldDir := "directory/"
 	for i := range 2 {
-		createFile(t, db, oldDir+strconv.Itoa(i))
+		createFile(t, vault, oldDir+strconv.Itoa(i))
 	}
 
 	newDir := "folder/"
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	cmd.SetArgs([]string{oldDir, newDir})
 
 	err := cmd.Execute()
 	assert.NoError(t, err)
 
-	names, err := file.ListNames(db)
+	names, err := file.ListNames(vault)
 	assert.NoError(t, err)
 
 	for _, name := range names {
@@ -56,28 +56,28 @@ func TestMvDir(t *testing.T) {
 }
 
 func TestMvFileIntoDir(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	filename := "directory/test.csv"
 	newDir := "folder/"
-	createFile(t, db, filename)
+	createFile(t, vault, filename)
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	cmd.SetArgs([]string{filename, newDir})
 
 	err := cmd.Execute()
 	assert.NoError(t, err)
 
 	newName := newDir + strings.Split(filename, "/")[1]
-	_, err = file.GetCheap(db, newName)
+	_, err = file.GetCheap(vault, newName)
 	assert.NoError(t, err, "Failed getting the renamed file")
 }
 
 func TestMvErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	createFile(t, db, "exists")
+	vault := command_helper.SetContext(t)
+	createFile(t, vault, "exists")
 	dir := "dir/"
-	createFile(t, db, dir+"1")
+	createFile(t, vault, dir+"1")
 
 	cases := []struct {
 		desc    string
@@ -106,7 +106,7 @@ func TestMvErrors(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -118,15 +118,15 @@ func TestMvErrors(t *testing.T) {
 }
 
 func TestMissingArguments(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	cmd.SetArgs([]string{"oldName"})
 	err := cmd.Execute()
 	assert.Error(t, err)
 }
 
-func createFile(t *testing.T, db *bolt.DB, name string) {
-	err := file.Create(db, &pb.File{Name: name})
+func createFile(t *testing.T, vault *bolt.DB, name string) {
+	err := file.Create(vault, &protobuf.File{Name: name})
 	assert.NoError(t, err, "Failed creating file")
 }

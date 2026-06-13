@@ -5,26 +5,26 @@ import (
 	"runtime"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
 
 func TestImport(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
-		expected *pb.Entry
+		expected *protobuf.Entry
 		manager  string
 		path     string
 	}{
 		{
 			manager: "Keepass",
 			path:    "testdata/test_keepass",
-			expected: &pb.Entry{
+			expected: &protobuf.Entry{
 				Name:     "keepass",
 				Username: "test@keepass.com",
 				Password: "keepass123",
@@ -36,7 +36,7 @@ func TestImport(t *testing.T) {
 		{
 			manager: "Keepassxc",
 			path:    "testdata/test_keepassxc",
-			expected: &pb.Entry{
+			expected: &protobuf.Entry{
 				Name:     "test/keepassxc",
 				Username: "test@keepassxc.com",
 				Password: "keepassxc123",
@@ -48,7 +48,7 @@ func TestImport(t *testing.T) {
 		{
 			manager: "1password",
 			path:    "testdata/test_1password.csv",
-			expected: &pb.Entry{
+			expected: &protobuf.Entry{
 				Name:     "1password",
 				Username: "test@1password.com",
 				Password: "1password123",
@@ -61,7 +61,7 @@ func TestImport(t *testing.T) {
 			manager: "Lastpass",
 			path:    "testdata/test_lastpass.csv",
 			// sphinx will join folders with the entry names
-			expected: &pb.Entry{
+			expected: &protobuf.Entry{
 				Name:     "test/lastpass",
 				Username: "test@lastpass.com",
 				Password: "lastpass123",
@@ -74,7 +74,7 @@ func TestImport(t *testing.T) {
 			manager: "Bitwarden",
 			path:    "testdata/test_bitwarden.csv",
 			// sphinx will join folders with the entry names
-			expected: &pb.Entry{
+			expected: &protobuf.Entry{
 				Name:     "test/bitwarden",
 				Username: "test@bitwarden.com",
 				Password: "bitwarden123",
@@ -85,7 +85,7 @@ func TestImport(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.manager, func(t *testing.T) {
@@ -95,7 +95,7 @@ func TestImport(t *testing.T) {
 			err := cmd.Execute()
 			assert.NoError(t, err, "Failed importing entries")
 
-			got, err := entry.Get(db, tc.expected.Name)
+			got, err := entry.Get(vault, tc.expected.Name)
 			assert.NoError(t, err, "Failed listing entry")
 
 			equal := proto.Equal(tc.expected, got)
@@ -105,7 +105,7 @@ func TestImport(t *testing.T) {
 }
 
 func TestInvalidImport(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc    string
@@ -149,7 +149,7 @@ func TestInvalidImport(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -163,14 +163,14 @@ func TestInvalidImport(t *testing.T) {
 }
 
 func TestImportAndErase(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	tempFile, err := os.CreateTemp("", "*.csv")
 	assert.NoError(t, err, "Failed creating temporary file")
 	tempFile.WriteString("test")
 	tempFile.Close()
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	cmd.SetArgs([]string{"keepass"})
 	f := cmd.Flags()
 	f.Set("path", tempFile.Name())
@@ -187,13 +187,13 @@ func TestImportAndEraseError(t *testing.T) {
 	if runtime.GOOS != "windows" {
 		t.SkipNow()
 	}
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	tempFile, err := os.CreateTemp("", "*.csv")
 	assert.NoError(t, err, "Failed creating temporary file")
 	tempFile.WriteString("test")
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	cmd.SetArgs([]string{"lastpass"})
 	f := cmd.Flags()
 	f.Set("path", tempFile.Name())
@@ -205,7 +205,7 @@ func TestImportAndEraseError(t *testing.T) {
 }
 
 func TestCreateTOTP(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc string
@@ -225,15 +225,15 @@ func TestCreateTOTP(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			err := createTOTP(db, tc.name, tc.raw)
+			err := createTOTP(vault, tc.name, tc.raw)
 			assert.NoError(t, err, "Failed creating TOTP")
 		})
 	}
 }
 
 func TestArgs(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	cmd := NewCmd(db)
+	vault := command_helper.SetContext(t)
+	cmd := NewCmd(vault)
 
 	t.Run("Supported", func(t *testing.T) {
 		list := []string{"1password", "bitwarden", "keepass", "keepassx", "keepassxc", "lastpass"}

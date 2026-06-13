@@ -13,9 +13,9 @@ import (
 
 	"github.com/5-bare-bones/5bb__sphinx/config"
 	"github.com/5-bare-bones/5bb__sphinx/crypt"
-	"github.com/5-bare-bones/5bb__sphinx/db/auth"
-	authDB "github.com/5-bare-bones/5bb__sphinx/db/auth"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/auth"
+	authVault "github.com/5-bare-bones/5bb__sphinx/vault/auth"
 
 	"github.com/awnumar/memguard"
 	"github.com/pkg/errors"
@@ -32,19 +32,19 @@ const (
 // a command is effectively the owner of the information.
 //
 // If it's the first record the user is registered.
-func Login(db *bolt.DB) error {
+func Login(vault *bolt.DB) error {
 	// If auth is not nil it means the user is already logged in (session)
 	if auth := config.Get(authKey); auth != nil {
 		return nil
 	}
 
-	params, err := authDB.GetParams(db)
+	params, err := authVault.GetParams(vault)
 	if err != nil {
 		return err
 	}
 	// The auth key will be nil only on the user's first (successful) command
 	if params.AuthKey == nil {
-		return Register(db, os.Stdin)
+		return Register(vault, os.Stdin)
 	}
 
 	password, err := terminal.ScanPassword("Enter master password", false)
@@ -73,7 +73,7 @@ func Login(db *bolt.DB) error {
 }
 
 // Register registers the user when there aren't any records yet.
-func Register(db *bolt.DB, r io.Reader) error {
+func Register(vault *bolt.DB, r io.Reader) error {
 	password, err := terminal.ScanPassword("New master password", true)
 	if err != nil {
 		return err
@@ -96,8 +96,8 @@ func Register(db *bolt.DB, r io.Reader) error {
 		}
 	}
 
-	params := authDB.Params{
-		Argon2: authDB.Argon2{
+	params := authVault.Params{
+		Argon2: authVault.Argon2{
 			Iterations: argon2.Iterations,
 			Memory:     argon2.Memory,
 			Threads:    argon2.Threads,
@@ -111,10 +111,10 @@ func Register(db *bolt.DB, r io.Reader) error {
 	_, _ = rand.Read(key)
 	setKeyToConfig(key)
 
-	return authDB.Register(db, key, params)
+	return authVault.Register(vault, key, params)
 }
 
-func askArgon2Params(r io.Reader) (authDB.Argon2, error) {
+func askArgon2Params(r io.Reader) (authVault.Argon2, error) {
 	fmt.Println("Set argon2 parameters, leave blank to use the default value")
 	fmt.Println("For more information visit https://github.com/5-bare-bones/5bb__sphinx/wiki/Authentication")
 
@@ -122,21 +122,21 @@ func askArgon2Params(r io.Reader) (authDB.Argon2, error) {
 
 	iterations, err := scanParameter(reader, "Iterations", 1)
 	if err != nil {
-		return authDB.Argon2{}, err
+		return authVault.Argon2{}, err
 	}
 
 	// memory is measured in kibibytes, 1 kibibyte = 1024 bytes. 1048576 kibibytes -> 1GiB
 	memory, err := scanParameter(reader, "Memory", 1<<20)
 	if err != nil {
-		return authDB.Argon2{}, err
+		return authVault.Argon2{}, err
 	}
 
 	threads, err := scanParameter(reader, "Threads", uint32(runtime.NumCPU()))
 	if err != nil {
-		return authDB.Argon2{}, err
+		return authVault.Argon2{}, err
 	}
 
-	return authDB.Argon2{
+	return authVault.Argon2{
 		Iterations: iterations,
 		Memory:     memory,
 		Threads:    threads,
@@ -216,7 +216,7 @@ func setAuthToConfig(password *memguard.Enclave, params auth.Params) {
 	config.Set(authKey, auth)
 }
 
-// Auth key must be set to the configuration before any database operation is performed.
+// Auth key must be set to the configuration before any vault operation is performed.
 func setKeyToConfig(key []byte) {
 	config.Set(authKey+".key", key)
 }

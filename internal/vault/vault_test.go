@@ -7,10 +7,10 @@ import (
 
 	"github.com/5-bare-bones/5bb__sphinx/config"
 	"github.com/5-bare-bones/5bb__sphinx/crypt"
-	authDB "github.com/5-bare-bones/5bb__sphinx/db/auth"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	authVault "github.com/5-bare-bones/5bb__sphinx/vault/auth"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/awnumar/memguard"
 	"github.com/stretchr/testify/assert"
@@ -21,12 +21,12 @@ import (
 // login reproduces auth.Login non-interactively: derive the password key,
 // decrypt the stored vault key, and load both into config — exactly what a
 // fresh student session does when opening a forged vault.
-func login(t *testing.T, db *bolt.DB, passphrase string) {
+func login(t *testing.T, vault *bolt.DB, passphrase string) {
 	t.Helper()
 	config.Set("auth", nil)
 	config.Set("auth.key", nil)
 
-	params, err := authDB.GetParams(db)
+	params, err := authVault.GetParams(vault)
 	require.NoError(t, err)
 
 	config.Set("auth", map[string]interface{}{
@@ -46,29 +46,29 @@ func TestCreateRoundTrip(t *testing.T) {
 	const pass = "correct horse battery staple"
 
 	seed := Seed{
-		Entries: []*pb.Entry{
+		Entries: []*protobuf.Entry{
 			{Name: "github", Username: "alice", Password: "hunter2", URL: "https://github.com"},
 		},
-		Cards: []*pb.Card{
+		Cards: []*protobuf.Card{
 			{Name: "visa", Type: "Visa", Number: "4111111111111111", SecurityCode: "123", ExpireDate: "12/2030"},
 		},
 	}
 
 	require.NoError(t, Create(path, pass, DefaultArgon2(), seed))
 
-	db, err := bolt.Open(path, 0o600, &bolt.Options{Timeout: time.Second})
+	vault, err := bolt.Open(path, 0o600, &bolt.Options{Timeout: time.Second})
 	require.NoError(t, err)
-	defer db.Close()
+	defer vault.Close()
 
 	// Open it as a brand-new session would.
-	login(t, db, pass)
+	login(t, vault, pass)
 
-	e, err := entry.Get(db, "github")
+	e, err := entry.Get(vault, "github")
 	require.NoError(t, err)
 	assert.Equal(t, "alice", e.Username)
 	assert.Equal(t, "hunter2", e.Password)
 
-	c, err := card.Get(db, "visa")
+	c, err := card.Get(vault, "visa")
 	require.NoError(t, err)
 	assert.Equal(t, "4111111111111111", c.Number)
 }
@@ -82,13 +82,13 @@ func TestWrongPassphraseFailsLogin(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "bob.db")
 	require.NoError(t, Create(path, "right answer", DefaultArgon2(), Seed{}))
 
-	db, err := bolt.Open(path, 0o600, &bolt.Options{Timeout: time.Second})
+	vault, err := bolt.Open(path, 0o600, &bolt.Options{Timeout: time.Second})
 	require.NoError(t, err)
-	defer db.Close()
+	defer vault.Close()
 
 	config.Set("auth", nil)
 	config.Set("auth.key", nil)
-	params, err := authDB.GetParams(db)
+	params, err := authVault.GetParams(vault)
 	require.NoError(t, err)
 	config.Set("auth", map[string]interface{}{
 		"password":   memguard.NewEnclave([]byte("WRONG answer")),

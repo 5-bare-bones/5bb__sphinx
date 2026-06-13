@@ -12,7 +12,7 @@ func init() {
 		Parent: "file",
 		Level:  registry.TierScholar,
 		New: func(c registry.BuildContext) *cobra.Command {
-			return NewCmd(c.DB, c.In)
+			return NewCmd(c.Vault, c.In)
 		},
 	})
 }

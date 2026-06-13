@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -31,7 +31,7 @@ type touchOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := touchOptions{}
 	cmd := &cobra.Command{
 		Use:   "touch <name>",
@@ -49,9 +49,9 @@ In case a path is passed, sphinx will create any missing folders for you.`,
 			if len(args) == 0 {
 				return nil
 			}
-			return cmdutil.MustExist(db, cmdutil.File, true)(cmd, args)
+			return command_helper.MustExist(vault, command_helper.File, true)(cmd, args)
 		},
-		RunE: runTouch(db, &opts),
+		RunE: runTouch(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = touchOptions{}
@@ -65,11 +65,11 @@ In case a path is passed, sphinx will create any missing folders for you.`,
 	return cmd
 }
 
-func runTouch(db *bolt.DB, opts *touchOptions) cmdutil.RunErrorFunction {
+func runTouch(vault *bolt.DB, opts *touchOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		absolute, err := filepath.Abs(opts.path)
 		if err != nil {
-			return cmdutil.ErrInvalidPath
+			return command_helper.ErrInvalidPath
 		}
 		opts.path = absolute
 
@@ -83,7 +83,7 @@ func runTouch(db *bolt.DB, opts *touchOptions) cmdutil.RunErrorFunction {
 
 		// Create all
 		if len(args) == 0 {
-			files, err := file.List(db)
+			files, err := file.List(vault)
 			if err != nil {
 				return err
 			}
@@ -108,14 +108,14 @@ func runTouch(db *bolt.DB, opts *touchOptions) cmdutil.RunErrorFunction {
 
 			// Assume the user wants to recreate an entire directory
 			if strings.HasSuffix(name, "/") {
-				if err := createDirectory(db, name, opts.path, opts.overwrite); err != nil {
+				if err := createDirectory(vault, name, opts.path, opts.overwrite); err != nil {
 					fmt.Fprintln(os.Stderr, "error:", err)
 				}
 				continue
 			}
 
 			// Create single file
-			f, err := file.Get(db, name)
+			f, err := file.Get(vault, name)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "error:", err)
 				continue
@@ -131,8 +131,8 @@ func runTouch(db *bolt.DB, opts *touchOptions) cmdutil.RunErrorFunction {
 	}
 }
 
-func createDirectory(db *bolt.DB, name, path string, overwrite bool) error {
-	files, err := file.List(db)
+func createDirectory(vault *bolt.DB, name, path string, overwrite bool) error {
+	files, err := file.List(vault)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func createDirectory(db *bolt.DB, name, path string, overwrite bool) error {
 		name += "/"
 	}
 
-	var dir []*pb.File
+	var dir []*protobuf.File
 	for _, f := range files {
 		if strings.HasPrefix(f.Name, name) {
 			dir = append(dir, f)
@@ -163,7 +163,7 @@ func createDirectory(db *bolt.DB, name, path string, overwrite bool) error {
 	return nil
 }
 
-func createFile(file *pb.File, overwrite bool) error {
+func createFile(file *protobuf.File, overwrite bool) error {
 	filename := filepath.Base(file.Name)
 
 	// Create if it doesn't exist or if we are allowed to overwrite it
@@ -178,12 +178,12 @@ func createFile(file *pb.File, overwrite bool) error {
 	return nil
 }
 
-// createFiles takes care of recreating folders and files as they were stored in the database.
+// createFiles takes care of recreating folders and files as they were stored in the vault.
 //
 // This function works synchronously only, running it concurrently messes up os.Chdir().
 //
 // The path is used only to return to the root folder.
-func createFiles(file *pb.File, path string, overwrite bool) error {
+func createFiles(file *protobuf.File, path string, overwrite bool) error {
 	// "the shire/frodo/ring.png" would be [the shire, frodo, ring.png]
 	parts := strings.Split(file.Name, "/")
 

@@ -3,17 +3,17 @@ package list
 import (
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestList(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	err := card.Create(db, &pb.Card{
+	err := card.Create(vault, &protobuf.Card{
 		Name:   "test",
 		Number: "1500135",
 	})
@@ -51,7 +51,7 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	f := cmd.Flags()
 
 	for _, tc := range cases {
@@ -68,9 +68,9 @@ func TestList(t *testing.T) {
 }
 
 func TestListErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	err := card.Create(db, &pb.Card{Name: "test"})
+	err := card.Create(vault, &protobuf.Card{Name: "test"})
 	assert.NoError(t, err, "Failed creating the card")
 
 	cases := []struct {
@@ -101,7 +101,7 @@ func TestListErrors(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {

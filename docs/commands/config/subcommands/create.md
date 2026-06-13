@@ -15,6 +15,7 @@ Create a configuration file. sphinx will create the file for you if necessary.
 #### Text editors commands
 *Editor*: *command*
 ```
+Micro: micro
 Vim: vim
 Neovim: nvim
 Emacs: emacs

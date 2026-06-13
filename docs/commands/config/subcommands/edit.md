@@ -9,6 +9,7 @@ Edit the current configuration file.
 #### Text editors commands
 *Editor*: *command*
 ```
+Micro: micro
 Vim: vim
 Neovim: nvim
 Emacs: emacs

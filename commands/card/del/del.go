@@ -5,9 +5,9 @@ import (
 	"io"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -24,17 +24,17 @@ sphinx card del SampleDir/
 sphinx card del Sample Sample2 Sample3`
 
 // NewCmd returns the a new command.
-func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
+func NewCmd(vault *bolt.DB, r io.Reader) *cobra.Command {
 	return &cobra.Command{
 		Use:     "del <names>",
 		Short:   "Remove cards or directories",
 		Example: example,
-		Args:    cmdutil.MustExist(db, cmdutil.Card, true),
-		RunE:    runDelete(db, r),
+		Args:    command_helper.MustExist(vault, command_helper.Card, true),
+		RunE:    runDelete(vault, r),
 	}
 }
 
-func runDelete(db *bolt.DB, r io.Reader) cmdutil.RunErrorFunction {
+func runDelete(vault *bolt.DB, r io.Reader) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if !terminal.Confirm(r, "Are you sure you want to proceed?") {
 			return nil
@@ -42,7 +42,7 @@ func runDelete(db *bolt.DB, r io.Reader) cmdutil.RunErrorFunction {
 
 		names := make([]string, 0, len(args))
 		for _, name := range args {
-			name = cmdutil.NormalizeName(name, true)
+			name = command_helper.NormalizeName(name, true)
 
 			if !strings.HasSuffix(name, "/") {
 				names = append(names, name)
@@ -50,7 +50,7 @@ func runDelete(db *bolt.DB, r io.Reader) cmdutil.RunErrorFunction {
 				continue
 			}
 
-			cards, err := card.ListNames(db)
+			cards, err := card.ListNames(vault)
 			if err != nil {
 				return err
 			}
@@ -63,6 +63,6 @@ func runDelete(db *bolt.DB, r io.Reader) cmdutil.RunErrorFunction {
 			}
 		}
 
-		return card.Remove(db, names...)
+		return card.Remove(vault, names...)
 	}
 }

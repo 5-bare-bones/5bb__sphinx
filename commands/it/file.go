@@ -3,14 +3,14 @@ package it
 import (
 	"fmt"
 
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/AlecAivazis/survey/v2"
 	bolt "go.etcd.io/bbolt"
 )
 
-func fileMultiselect(db *bolt.DB) ([]string, error) {
-	files, err := file.ListNames(db)
+func fileMultiselect(vault *bolt.DB) ([]string, error) {
+	files, err := file.ListNames(vault)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func fileMultiselect(db *bolt.DB) ([]string, error) {
 			Prompt: &survey.MultiSelect{
 				Message: "Choose files:",
 				Options: files,
-				VimMode: true,
+				VimMode: true, //TODO: remove VimMode
 			},
 		},
 	}
@@ -38,8 +38,8 @@ func fileMultiselect(db *bolt.DB) ([]string, error) {
 	return names, nil
 }
 
-func fileMvNames(db *bolt.DB) ([]string, error) {
-	files, err := file.ListNames(db)
+func fileMvNames(vault *bolt.DB) ([]string, error) {
+	files, err := file.ListNames(vault)
 	if err != nil {
 		return nil, err
 	}

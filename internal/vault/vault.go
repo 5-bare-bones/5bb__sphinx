@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/5-bare-bones/5bb__sphinx/config"
-	authDB "github.com/5-bare-bones/5bb__sphinx/db/auth"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	authVault "github.com/5-bare-bones/5bb__sphinx/vault/auth"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 
 	"github.com/awnumar/memguard"
 	"github.com/pkg/errors"
@@ -40,9 +40,9 @@ func DefaultArgon2() Argon2 {
 
 // Seed is the content a new vault is populated with.
 type Seed struct {
-	Entries []*pb.Entry
-	Cards   []*pb.Card
-	TOTPs   []*pb.TOTP
+	Entries []*protobuf.Entry
+	Cards   []*protobuf.Card
+	TOTPs   []*protobuf.TOTP
 }
 
 // Create mints a new vault file at path, protected by passphrase, and populates
@@ -58,12 +58,12 @@ func Create(path, passphrase string, p Argon2, seed Seed) (err error) {
 
 	loadAuthConfig(passphrase, p)
 
-	db, err := bolt.Open(path, 0o600, &bolt.Options{Timeout: time.Second})
+	vault, err := bolt.Open(path, 0o600, &bolt.Options{Timeout: time.Second})
 	if err != nil {
 		return errors.Wrap(err, "creating vault file")
 	}
 	defer func() {
-		if cerr := db.Close(); cerr != nil && err == nil {
+		if cerr := vault.Close(); cerr != nil && err == nil {
 			err = cerr
 		}
 	}()
@@ -76,22 +76,22 @@ func Create(path, passphrase string, p Argon2, seed Seed) (err error) {
 	}
 	config.Set("auth.key", key)
 
-	if err = authDB.Register(db, key, authDB.Params{Argon2: authDB.Argon2(p)}); err != nil {
+	if err = authVault.Register(vault, key, authVault.Params{Argon2: authVault.Argon2(p)}); err != nil {
 		return errors.Wrap(err, "registering auth")
 	}
 
 	if len(seed.Entries) > 0 {
-		if err = entry.Create(db, seed.Entries...); err != nil {
+		if err = entry.Create(vault, seed.Entries...); err != nil {
 			return errors.Wrap(err, "seeding entries")
 		}
 	}
 	for _, c := range seed.Cards {
-		if err = card.Create(db, c); err != nil {
+		if err = card.Create(vault, c); err != nil {
 			return errors.Wrap(err, "seeding card")
 		}
 	}
 	for _, t := range seed.TOTPs {
-		if err = totp.Create(db, t); err != nil {
+		if err = totp.Create(vault, t); err != nil {
 			return errors.Wrap(err, "seeding totp")
 		}
 	}

@@ -15,7 +15,7 @@ Paths inside it **MUST** be **absolute**.
 
 - [Clipboard](#clipboard)
   - [Timeout](#timeout)
-- [Database](#database)
+- [vault](#vault)
   - [Path](#path)
 - [Editor](#editor)
 - [Keyfile](#keyfile)
@@ -35,12 +35,12 @@ Set to "0s" or leave blank for no timeout.
 
 ---
 
-### Database
+### vault
 #### Path
 
 > Must be absolute.
 
-Path to the database file (if it doesn't exist, it will be created).
+Path to the vault file (if it doesn't exist, it will be created).
 
 ---
 
@@ -55,7 +55,7 @@ The command of the editor you would like to use. If no editor is set in the conf
 
 > Must be absolute.
 
-The path to the key file may be specified or not, in case it's not, the user will be asked for it every time he wants to access the database, in the other case the user has to input the password only.
+The path to the key file may be specified or not, in case it's not, the user will be asked for it every time he wants to access the vault, in the other case the user has to input the password only.
 
 ---
 

@@ -11,7 +11,7 @@ func init() {
 		Verb:  "debug",
 		Level: registry.TierHero,
 		New: func(c registry.BuildContext) *cobra.Command {
-			return NewCmd(c.DB)
+			return NewCmd(c.Vault)
 		},
 	})
 }

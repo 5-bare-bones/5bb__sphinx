@@ -2,12 +2,12 @@
 # In case any of these values is omitted, sphinx will use the default one.
 # See ../configuration.md for further information.
 
-editor = "vim"
+editor = "micro"
 
 [clipboard]
   timeout = "5s" # Set to "0s" or leave blank for no timeout
 
-[database]
+[vault]
   path = "/home/user/kure.db" # Must be absolute
 
 [keyfile]

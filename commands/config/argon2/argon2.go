@@ -3,9 +3,9 @@ package argon2
 import (
 	"fmt"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/commands/config/argon2/test"
-	authDB "github.com/5-bare-bones/5bb__sphinx/db/auth"
+	authVault "github.com/5-bare-bones/5bb__sphinx/vault/auth"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -15,13 +15,13 @@ const example = `
 sphinx config argon2`
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "argon2",
 		Short:   "Display currently used argon2 parameters",
 		Aliases: []string{"argon"},
 		Example: example,
-		RunE:    runArgon2(db),
+		RunE:    runArgon2(vault),
 	}
 
 	cmd.AddCommand(test.NewCmd())
@@ -29,9 +29,9 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runArgon2(db *bolt.DB) cmdutil.RunErrorFunction {
+func runArgon2(vault *bolt.DB) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
-		params, err := authDB.GetParams(db)
+		params, err := authVault.GetParams(vault)
 		if err != nil {
 			return err
 		}

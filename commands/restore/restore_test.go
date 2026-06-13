@@ -3,26 +3,26 @@ package restore
 import (
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/bucket"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
 
 func TestLogs(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	expected := &pb.Entry{
+	expected := &protobuf.Entry{
 		Name:     "test",
 		Username: "test@test.com",
 		Password: "Pb*9' fxd%,IS:Zo_1JVw",
 		Expires:  "Never",
 	}
-	err := entry.Create(db, expected)
+	err := entry.Create(vault, expected)
 	assert.NoError(t, err)
 
 	l, err := newLog(bucket.Entry.GetName())
@@ -30,13 +30,13 @@ func TestLogs(t *testing.T) {
 	defer l.Close()
 
 	logs := []*log{l}
-	err = writeLogs(db, logs)
+	err = writeLogs(vault, logs)
 	assert.NoError(t, err, "Failed writing logs")
 
-	err = readLogs(db, logs)
+	err = readLogs(vault, logs)
 	assert.NoError(t, err, "Failed reading logs")
 
-	got, err := entry.Get(db, expected.Name)
+	got, err := entry.Get(vault, expected.Name)
 	assert.NoError(t, err, "Failed fetching entry")
 
 	equal := proto.Equal(expected, got)
@@ -44,14 +44,14 @@ func TestLogs(t *testing.T) {
 }
 
 func TestReadLogs(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	expected := &pb.Card{
+	expected := &protobuf.Card{
 		Name:         "testRead",
 		Number:       "47964212",
 		SecurityCode: "442",
 	}
-	err := card.Create(db, expected)
+	err := card.Create(vault, expected)
 	assert.NoError(t, err)
 
 	l, err := newLog(bucket.Card.GetName())
@@ -59,10 +59,10 @@ func TestReadLogs(t *testing.T) {
 	defer l.Close()
 
 	logs := []*log{l}
-	err = readLogs(db, logs)
+	err = readLogs(vault, logs)
 	assert.NoError(t, err, "Failed reading logs")
 
-	got, err := card.Get(db, expected.Name)
+	got, err := card.Get(vault, expected.Name)
 	assert.NoError(t, err, "Failed fetching card")
 
 	equal := proto.Equal(expected, got)
@@ -70,12 +70,12 @@ func TestReadLogs(t *testing.T) {
 }
 
 func TestWriteLogs(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	l, err := newLog(bucket.Entry.GetName())
 	assert.NoError(t, err)
 	defer l.Close()
 
-	err = writeLogs(db, []*log{l})
+	err = writeLogs(vault, []*log{l})
 	assert.NoError(t, err, "Failed writing logs")
 }

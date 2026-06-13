@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 	"github.com/GGP1/atoll"
 
 	"github.com/pkg/errors"
@@ -28,14 +28,14 @@ type rotateOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := rotateOptions{}
 	cmd := &cobra.Command{
 		Use:     "rotate <name>",
 		Short:   "Rotate an entry's password",
 		Example: example,
-		Args:    cmdutil.MustExist(db, cmdutil.Entry),
-		RunE:    runRotate(db, &opts),
+		Args:    command_helper.MustExist(vault, command_helper.Entry),
+		RunE:    runRotate(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = rotateOptions{}
@@ -50,12 +50,12 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runRotate(db *bolt.DB, opts *rotateOptions) cmdutil.RunErrorFunction {
+func runRotate(vault *bolt.DB, opts *rotateOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
-		e, err := entry.Get(db, name)
+		e, err := entry.Get(vault, name)
 		if err != nil {
 			return err
 		}
@@ -78,12 +78,12 @@ func runRotate(db *bolt.DB, opts *rotateOptions) cmdutil.RunErrorFunction {
 			e.Password = string(password)
 		}
 
-		if err := entry.Update(db, name, e); err != nil {
+		if err := entry.Update(vault, name, e); err != nil {
 			return err
 		}
 
 		if opts.copy {
-			return cmdutil.WriteClipboard(cmd, opts.timeout, "Password", e.Password)
+			return command_helper.WriteClipboard(cmd, opts.timeout, "Password", e.Password)
 		}
 
 		fmt.Printf("\n%q password rotated\n", name)

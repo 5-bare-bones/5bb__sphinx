@@ -4,13 +4,13 @@
 
 ## Description
 
-Create database backup.
+Create vault backup.
 
 ## Flags
 
 |  Name     |     Type      |    Default    |                  Description                   |
 |-----------|---------------|---------------|------------------------------------------------|
-| http      | bool          | false         | Serve the database file on a http server       |
+| http      | bool          | false         | Serve the vault file on a http server       |
 | path      | string        | ""            | Backup file path                               |
 | port      | uint16        | 8080          | Server port                                    |
 
@@ -21,12 +21,12 @@ Create file backup:
 sphinx backup --path path/to/file
 ```
 
-Serve database on a local server:
+Serve vault on a local server:
 ```
 sphinx backup --http --port 8080
 ```
 
-Download database:
+Download vault:
 ```
-curl localhost:8080 > database_name
+curl localhost:8080 > vault_name
 ```

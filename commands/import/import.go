@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -30,7 +30,7 @@ type importOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := importOptions{}
 	cmd := &cobra.Command{
 		Use:   "import <manager-name>",
@@ -47,8 +47,8 @@ Supported:
    	• Keepass/X/XC
 	• Lastpass`,
 		Example: example,
-		Args:    cmdutil.SupportedManagers(),
-		RunE:    runImport(db, &opts),
+		Args:    command_helper.SupportedManagers(),
+		RunE:    runImport(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = importOptions{}
@@ -62,13 +62,13 @@ Supported:
 	return cmd
 }
 
-func runImport(db *bolt.DB, opts *importOptions) cmdutil.RunErrorFunction {
+func runImport(vault *bolt.DB, opts *importOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		manager := strings.Join(args, " ")
 		manager = strings.ToLower(manager)
 
 		if opts.path == "" {
-			return cmdutil.ErrInvalidPath
+			return command_helper.ErrInvalidPath
 		}
 		ext := filepath.Ext(opts.path)
 		if ext == "" || ext == "." {
@@ -80,12 +80,12 @@ func runImport(db *bolt.DB, opts *importOptions) cmdutil.RunErrorFunction {
 			return err
 		}
 
-		if err := createEntries(db, manager, records); err != nil {
+		if err := createEntries(vault, manager, records); err != nil {
 			return err
 		}
 
 		if opts.erase {
-			if err := cmdutil.Erase(opts.path); err != nil {
+			if err := command_helper.Erase(opts.path); err != nil {
 				return err
 			}
 			fmt.Println("Erased file at", opts.path)
@@ -96,16 +96,16 @@ func runImport(db *bolt.DB, opts *importOptions) cmdutil.RunErrorFunction {
 	}
 }
 
-func createEntries(db *bolt.DB, manager string, records [][]string) error {
+func createEntries(vault *bolt.DB, manager string, records [][]string) error {
 	// [1:] used to skip headers
 	records = records[:][1:]
-	entries := make([]*pb.Entry, len(records))
+	entries := make([]*protobuf.Entry, len(records))
 
 	switch manager {
 	case "keepass", "keepassx":
 		for i, record := range records {
-			entries[i] = &pb.Entry{
-				Name:     cmdutil.NormalizeName(record[0]),
+			entries[i] = &protobuf.Entry{
+				Name:     command_helper.NormalizeName(record[0]),
 				Username: record[1],
 				Password: record[2],
 				URL:      record[3],
@@ -116,9 +116,9 @@ func createEntries(db *bolt.DB, manager string, records [][]string) error {
 
 	case "keepassxc":
 		for i, record := range records {
-			entries[i] = &pb.Entry{
+			entries[i] = &protobuf.Entry{
 				// Join folder and name
-				Name:     cmdutil.NormalizeName(record[0] + "/" + record[1]),
+				Name:     command_helper.NormalizeName(record[0] + "/" + record[1]),
 				Username: record[2],
 				Password: record[3],
 				URL:      record[4],
@@ -129,8 +129,8 @@ func createEntries(db *bolt.DB, manager string, records [][]string) error {
 
 	case "1password":
 		for i, record := range records {
-			entries[i] = &pb.Entry{
-				Name:     cmdutil.NormalizeName(record[0]),
+			entries[i] = &protobuf.Entry{
+				Name:     command_helper.NormalizeName(record[0]),
 				Username: record[2],
 				Password: record[3],
 				URL:      record[1],
@@ -141,9 +141,9 @@ func createEntries(db *bolt.DB, manager string, records [][]string) error {
 
 	case "lastpass":
 		for i, record := range records {
-			entries[i] = &pb.Entry{
+			entries[i] = &protobuf.Entry{
 				// Join folder and name
-				Name:     cmdutil.NormalizeName(record[5] + "/" + record[4]),
+				Name:     command_helper.NormalizeName(record[5] + "/" + record[4]),
 				Username: record[1],
 				Password: record[2],
 				URL:      record[0],
@@ -155,8 +155,8 @@ func createEntries(db *bolt.DB, manager string, records [][]string) error {
 	case "bitwarden":
 		for i, record := range records {
 			// Join folder and name
-			name := cmdutil.NormalizeName(record[0] + "/" + record[3])
-			entries[i] = &pb.Entry{
+			name := command_helper.NormalizeName(record[0] + "/" + record[3])
+			entries[i] = &protobuf.Entry{
 				Name:     name,
 				Username: record[7],
 				Password: record[8],
@@ -166,28 +166,28 @@ func createEntries(db *bolt.DB, manager string, records [][]string) error {
 			}
 
 			// Create TOTP if the entry has one
-			if err := createTOTP(db, name, record[9]); err != nil {
+			if err := createTOTP(vault, name, record[9]); err != nil {
 				return err
 			}
 		}
 	}
 
-	return entry.Create(db, entries...)
+	return entry.Create(vault, entries...)
 }
 
-func createTOTP(db *bolt.DB, name, rawToken string) error {
+func createTOTP(vault *bolt.DB, name, rawToken string) error {
 	if rawToken == "" {
 		return nil
 	}
 
-	t := &pb.TOTP{
+	t := &protobuf.TOTP{
 		Name: name,
 		Raw:  rawToken,
 		// Bitwarden uses 6 digits by default
 		Digits: 6,
 	}
 
-	return totp.Create(db, t)
+	return totp.Create(vault, t)
 }
 
 func readCSV(path string) ([][]string, error) {

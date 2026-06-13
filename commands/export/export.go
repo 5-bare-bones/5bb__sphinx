@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -24,7 +24,7 @@ type exportOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := exportOptions{}
 	cmd := &cobra.Command{
 		Use:   "export <manager-name>",
@@ -39,8 +39,8 @@ Supported:
    	• Keepass/X/XC
    	• Lastpass`,
 		Example: example,
-		Args:    cmdutil.SupportedManagers(),
-		RunE:    runExport(db, &opts),
+		Args:    command_helper.SupportedManagers(),
+		RunE:    runExport(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = exportOptions{}
@@ -52,20 +52,20 @@ Supported:
 	return cmd
 }
 
-func runExport(db *bolt.DB, opts *exportOptions) cmdutil.RunErrorFunction {
+func runExport(vault *bolt.DB, opts *exportOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		manager := strings.Join(args, " ")
 		manager = strings.ToLower(manager)
 
 		if opts.path == "" {
-			return cmdutil.ErrInvalidPath
+			return command_helper.ErrInvalidPath
 		}
 		ext := filepath.Ext(opts.path)
 		if ext == "" || ext == "." {
 			opts.path += ".csv"
 		}
 
-		headers, records, err := fmtEntries(db, manager)
+		headers, records, err := fmtEntries(vault, manager)
 		if err != nil {
 			return err
 		}
@@ -102,10 +102,10 @@ func createCSV(headers []string, records [][]string, path string) error {
 	return nil
 }
 
-// fmtEntries takes all the entries in the database and formats them
+// fmtEntries takes all the entries in the vault and formats them
 // in headers and records to meet each manager requirements.
-func fmtEntries(db *bolt.DB, manager string) ([]string, [][]string, error) {
-	entries, err := entry.List(db)
+func fmtEntries(vault *bolt.DB, manager string) ([]string, [][]string, error) {
+	entries, err := entry.List(vault)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -148,7 +148,7 @@ func fmtEntries(db *bolt.DB, manager string) ([]string, [][]string, error) {
 		headers = []string{"Folder", "Favorite", "Type", "Name", "Notes", "Fields", "Login_uri", "Login_username", "Login_password", "Login_totp"}
 
 		for i, e := range entries {
-			rawTOTP := getTOTP(db, e.Name)
+			rawTOTP := getTOTP(vault, e.Name)
 			dir, name := splitName(e.Name)
 			records[i] = []string{dir, "", "login", name, e.Notes, "", e.URL, e.Username, e.Password, rawTOTP}
 		}
@@ -158,8 +158,8 @@ func fmtEntries(db *bolt.DB, manager string) ([]string, [][]string, error) {
 }
 
 // getTOTP returns the raw TOTP if it exists and an empty string otherwise.
-func getTOTP(db *bolt.DB, name string) string {
-	t, err := totp.Get(db, name)
+func getTOTP(vault *bolt.DB, name string) string {
+	t, err := totp.Get(vault, name)
 	if err != nil {
 		return ""
 	}

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option go_package = "github.com/5-bare-bones/5bb__sphinx/protobuf";
+
+package protobuf;
+
+message Card {
+    string name = 1;
+    string type = 2;
+    string number = 3;
+    string security_code = 4;
+    string expire_date = 5;
+    string notes = 6;
+}

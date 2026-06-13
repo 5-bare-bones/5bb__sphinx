@@ -7,17 +7,17 @@ import (
 	"runtime"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/config"
-	"github.com/5-bare-bones/5bb__sphinx/db/auth"
+	"github.com/5-bare-bones/5bb__sphinx/vault/auth"
 
 	"github.com/awnumar/memguard"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestLogin(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	err := Login(db)
+	vault := command_helper.SetContext(t)
+	err := Login(vault)
 	assert.NoError(t, err)
 }
 

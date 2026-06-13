@@ -1,4 +1,4 @@
-package cmdutil
+package command_helper
 
 import (
 	"os"
@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/5-bare-bones/5bb__sphinx/config"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
 	"github.com/5-bare-bones/5bb__sphinx/orderedmap"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 
 	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
@@ -51,10 +51,10 @@ func TestErase(t *testing.T) {
 }
 
 func TestExistsTrue(t *testing.T) {
-	db := SetContext(t)
+	vault := SetContext(t)
 
 	name := "naboo/tatooine"
-	createObjects(t, db, name)
+	createObjects(t, vault, name)
 
 	cases := []struct {
 		desc   string
@@ -80,20 +80,20 @@ func TestExistsTrue(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			err := Exists(db, name, tc.object)
+			err := Exists(vault, name, tc.object)
 			assert.Error(t, err)
 
-			err = Exists(db, "naboo/tatooine/hoth", tc.object)
+			err = Exists(vault, "naboo/tatooine/hoth", tc.object)
 			assert.Error(t, err)
 
-			err = Exists(db, "naboo", tc.object)
+			err = Exists(vault, "naboo", tc.object)
 			assert.Error(t, err)
 		})
 	}
 }
 
 func TestExistsFalse(t *testing.T) {
-	db := SetContext(t)
+	vault := SetContext(t)
 
 	cases := []struct {
 		desc   string
@@ -124,7 +124,7 @@ func TestExistsFalse(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			err := Exists(db, tc.name, tc.object)
+			err := Exists(vault, tc.name, tc.object)
 			assert.NoError(t, err)
 		})
 	}
@@ -136,48 +136,60 @@ func TestFmtExpires(t *testing.T) {
 		expires  string
 		expected string
 	}{
-		{
-			desc:     "Never",
-			expires:  "Never",
-			expected: "Never",
-		},
-		{
-			desc:     "dd/mm/yy",
-			expires:  "26/06/2029",
-			expected: "Tue, 26 Jun 2029 00:00:00 +0000",
-		},
-		{
-			desc:     "yy/mm/dd",
-			expires:  "2029/06/26",
-			expected: "Tue, 26 Jun 2029 00:00:00 +0000",
-		},
+		{desc: "Never keyword", expires: "Never", expected: "Never"},
+		{desc: "Never case-insensitive", expires: "never", expected: "Never"},
+		{desc: "empty is Never", expires: "", expected: "Never"},
+		{desc: "blank is Never", expires: "   ", expected: "Never"},
+		{desc: "zero is Never", expires: "0", expected: "Never"},
+		{desc: "full ISO date", expires: "2029-06-26", expected: "2029-06-26"},
+		{desc: "full ISO date is trimmed", expires: " 2029-06-26 ", expected: "2029-06-26"},
+		{desc: "year only -> end of year", expires: "2029", expected: "2029-12-31"},
+		{desc: "month only -> end of 30-day month", expires: "2029-06", expected: "2029-06-30"},
+		{desc: "month only -> end of 31-day month", expires: "2029-07", expected: "2029-07-31"},
+		{desc: "February in a leap year", expires: "2024-02", expected: "2024-02-29"},
+		{desc: "February in a common year", expires: "2025-02", expected: "2025-02-28"},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			got, err := FormatExpires(tc.expires)
-			assert.NoError(t, err, "Failed formatting expires")
-
+			assert.NoError(t, err, "unexpected error formatting %q", tc.expires)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
 
-	t.Run("Invalid format", func(t *testing.T) {
-		_, err := FormatExpires("invalid format")
-		assert.Error(t, err)
-	})
+	invalid := []struct {
+		desc    string
+		expires string
+	}{
+		{desc: "non-numeric", expires: "invalid format"},
+		{desc: "legacy slash format", expires: "26/06/2029"},
+		{desc: "month out of range", expires: "2029-13"},
+		{desc: "day out of range for month", expires: "2029-06-31"},
+		{desc: "impossible February day", expires: "2025-02-30"},
+		{desc: "day zero", expires: "2029-06-00"},
+		{desc: "too many components", expires: "2029-06-26-01"},
+		{desc: "non-numeric month", expires: "2029-AB"},
+	}
+
+	for _, tc := range invalid {
+		t.Run("invalid: "+tc.desc, func(t *testing.T) {
+			_, err := FormatExpires(tc.expires)
+			assert.Error(t, err, "expected %q to be rejected", tc.expires)
+		})
+	}
 }
 
 func TestMustExist(t *testing.T) {
-	db := SetContext(t)
+	vault := SetContext(t)
 
 	name := "test/testing"
-	createObjects(t, db, name)
+	createObjects(t, vault, name)
 
 	t.Run("Success", func(t *testing.T) {
 		objects := []object{Card, Entry, File, TOTP}
 		for _, obj := range objects {
-			err := MustExist(db, obj)(nil, []string{name})
+			err := MustExist(vault, obj)(nil, []string{name})
 			assert.NoError(t, err)
 		}
 	})
@@ -212,7 +224,7 @@ func TestMustExist(t *testing.T) {
 
 		for _, tc := range cases {
 			t.Run(tc.desc, func(t *testing.T) {
-				err := MustExist(db, Card)(nil, []string{tc.name})
+				err := MustExist(vault, Card)(nil, []string{tc.name})
 				assert.Error(t, err)
 
 				assert.Equal(t, tc.errMessage, err.Error())
@@ -221,31 +233,31 @@ func TestMustExist(t *testing.T) {
 	})
 
 	t.Run("Empty args", func(t *testing.T) {
-		err := MustExist(db, Card)(nil, []string{})
+		err := MustExist(vault, Card)(nil, []string{})
 		assert.Error(t, err)
 	})
 
 	t.Run("Directories", func(t *testing.T) {
 		t.Run("Exists", func(t *testing.T) {
-			err := MustExist(db, Card, true)(nil, []string{"test/"})
+			err := MustExist(vault, Card, true)(nil, []string{"test/"})
 			assert.NoError(t, err)
 		})
 
 		t.Run("Not exists", func(t *testing.T) {
-			err := MustExist(db, Card, true)(nil, []string{"unexistent/"})
+			err := MustExist(vault, Card, true)(nil, []string{"unexistent/"})
 			assert.Error(t, err)
 		})
 	})
 }
 
 func TestMustExistList(t *testing.T) {
-	db := SetContext(t)
+	vault := SetContext(t)
 	cmd := &cobra.Command{}
 	cmd.Flags().Bool("filter", false, "")
 	objects := []object{Card, Entry, File, TOTP}
 
 	name := "test"
-	createObjects(t, db, name)
+	createObjects(t, vault, name)
 
 	cases := []struct {
 		desc   string
@@ -271,7 +283,7 @@ func TestMustExistList(t *testing.T) {
 		for _, tc := range cases {
 			t.Run(tc.desc, func(t *testing.T) {
 				for _, obj := range objects {
-					cmd.Args = MustExistList(db, obj)
+					cmd.Args = MustExistList(vault, obj)
 					cmd.Flags().Set("filter", strconv.FormatBool(tc.filter))
 
 					err := cmd.Args(cmd, []string{tc.name})
@@ -282,7 +294,7 @@ func TestMustExistList(t *testing.T) {
 	})
 
 	t.Run("Fail", func(t *testing.T) {
-		cmd.Args = MustExistList(db, Entry)
+		cmd.Args = MustExistList(vault, Entry)
 		cmd.Flag("filter").Changed = false
 
 		err := cmd.Args(cmd, []string{"non-existent"})
@@ -291,22 +303,22 @@ func TestMustExistList(t *testing.T) {
 }
 
 func TestMustNotExist(t *testing.T) {
-	db := SetContext(t)
+	vault := SetContext(t)
 	cmd := &cobra.Command{}
 	objects := []object{Card, Entry, File, TOTP}
 
 	t.Run("Success", func(t *testing.T) {
 		for _, obj := range objects {
-			cmd.Args = MustNotExist(db, obj)
+			cmd.Args = MustNotExist(vault, obj)
 			err := cmd.Args(cmd, []string{"test"})
 			assert.NoError(t, err)
 		}
 	})
 
 	t.Run("Fail", func(t *testing.T) {
-		err := entry.Create(db, &pb.Entry{Name: "test"})
+		err := entry.Create(vault, &protobuf.Entry{Name: "test"})
 		assert.NoError(t, err)
-		err = entry.Create(db, &pb.Entry{Name: "dir/"})
+		err = entry.Create(vault, &protobuf.Entry{Name: "dir/"})
 		assert.NoError(t, err)
 
 		cases := []struct {
@@ -335,7 +347,7 @@ func TestMustNotExist(t *testing.T) {
 
 		for _, tc := range cases {
 			t.Run(tc.desc, func(t *testing.T) {
-				cmd.Args = MustNotExist(db, Entry, tc.allowDir...)
+				cmd.Args = MustNotExist(vault, Entry, tc.allowDir...)
 				err := cmd.Args(cmd, []string{tc.name})
 				assert.Error(t, err)
 			})
@@ -343,7 +355,7 @@ func TestMustNotExist(t *testing.T) {
 	})
 
 	t.Run("No arguments", func(t *testing.T) {
-		cmd.Args = MustNotExist(db, Entry, false)
+		cmd.Args = MustNotExist(vault, Entry, false)
 		err := cmd.Args(cmd, []string{})
 		assert.Error(t, err)
 	})
@@ -412,7 +424,7 @@ func TestSelectEditor(t *testing.T) {
 
 	t.Run("Default", func(t *testing.T) {
 		got := SelectEditor()
-		assert.Equal(t, "vim", got)
+		assert.Equal(t, "micro", got)
 	})
 }
 
@@ -680,14 +692,14 @@ func TestLevenshteinDistance(t *testing.T) {
 	}
 }
 
-func createObjects(t *testing.T, db *bolt.DB, name string) {
+func createObjects(t *testing.T, vault *bolt.DB, name string) {
 	t.Helper()
-	err := entry.Create(db, &pb.Entry{Name: name})
+	err := entry.Create(vault, &protobuf.Entry{Name: name})
 	assert.NoError(t, err)
-	err = card.Create(db, &pb.Card{Name: name})
+	err = card.Create(vault, &protobuf.Card{Name: name})
 	assert.NoError(t, err)
-	err = file.Create(db, &pb.File{Name: name})
+	err = file.Create(vault, &protobuf.File{Name: name})
 	assert.NoError(t, err)
-	err = totp.Create(db, &pb.TOTP{Name: name})
+	err = totp.Create(vault, &protobuf.TOTP{Name: name})
 	assert.NoError(t, err)
 }

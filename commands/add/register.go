@@ -11,7 +11,7 @@ func init() {
 		Verb:  "add",
 		Level: registry.TierApprentice,
 		New: func(c registry.BuildContext) *cobra.Command {
-			return NewCmd(c.DB, c.In)
+			return NewCmd(c.Vault, c.In)
 		},
 	})
 }

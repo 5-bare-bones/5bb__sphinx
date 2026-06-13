@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 )
 
 // log represents a log file.
@@ -46,7 +46,7 @@ func (l *log) Close() error {
 		return err
 	}
 	l.closed = true
-	return cmdutil.Erase(l.file.Name())
+	return command_helper.Erase(l.file.Name())
 }
 
 // Read reads the log and returns a slice of records.

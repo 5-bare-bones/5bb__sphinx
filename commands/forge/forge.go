@@ -8,9 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/internal/vault"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -80,7 +80,7 @@ func NewCmd() *cobra.Command {
 	return cmd
 }
 
-func runForge(outDir *string) cmdutil.RunErrorFunction {
+func runForge(outDir *string) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		raw, err := os.ReadFile(args[0])
 		if err != nil {
@@ -163,7 +163,7 @@ func resolveArgon2(spec *argon2Spec) vault.Argon2 {
 func seedFor(s student) vault.Seed {
 	seed := vault.Seed{}
 	for _, e := range s.Entries {
-		seed.Entries = append(seed.Entries, &pb.Entry{
+		seed.Entries = append(seed.Entries, &protobuf.Entry{
 			Name:     e.Name,
 			Username: e.Username,
 			Password: e.Password,
@@ -173,7 +173,7 @@ func seedFor(s student) vault.Seed {
 		})
 	}
 	for _, c := range s.Cards {
-		seed.Cards = append(seed.Cards, &pb.Card{
+		seed.Cards = append(seed.Cards, &protobuf.Card{
 			Name:         c.Name,
 			Type:         c.Type,
 			Number:       c.Number,
@@ -187,7 +187,7 @@ func seedFor(s student) vault.Seed {
 		if digits == 0 {
 			digits = 6
 		}
-		seed.TOTPs = append(seed.TOTPs, &pb.TOTP{
+		seed.TOTPs = append(seed.TOTPs, &protobuf.TOTP{
 			Name:   t.Name,
 			Raw:    t.Raw,
 			Digits: digits,

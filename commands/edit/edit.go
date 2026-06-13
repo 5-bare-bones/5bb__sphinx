@@ -8,13 +8,12 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/sig"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -33,7 +32,7 @@ type editOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := editOptions{}
 	cmd := &cobra.Command{
 		Use:   "edit <name>",
@@ -42,8 +41,8 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 
 If the name is edited, sphinx will remove the entry with the old name and create one with the new name.`,
 		Example: example,
-		Args:    cmdutil.MustExist(db, cmdutil.Entry),
-		RunE:    runEdit(db, &opts),
+		Args:    command_helper.MustExist(vault, command_helper.Entry),
+		RunE:    runEdit(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = editOptions{}
@@ -55,32 +54,28 @@ If the name is edited, sphinx will remove the entry with the old name and create
 	return cmd
 }
 
-func runEdit(db *bolt.DB, opts *editOptions) cmdutil.RunErrorFunction {
+func runEdit(vault *bolt.DB, opts *editOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
-		oldEntry, err := entry.Get(db, name)
+		oldEntry, err := entry.Get(vault, name)
 		if err != nil {
 			return err
 		}
 
-		// Format the expires fields so it's easy to read
-		if oldEntry.Expires != "Never" {
-			// This never fails as the field "expires" is parsed before stored
-			expires, _ := time.Parse(time.RFC1123Z, oldEntry.Expires)
-			oldEntry.Expires = expires.Format("02/01/2006")
-		}
+		// oldEntry.Expires is already an ISO date (or "Never"), so it is shown
+		// to the user as-is.
 
 		if opts.interactive {
-			return useTextEditor(db, oldEntry)
+			return useTextEditor(vault, oldEntry)
 		}
 
-		return useStdin(db, os.Stdin, oldEntry)
+		return useStdin(vault, os.Stdin, oldEntry)
 	}
 }
 
-func createTempFile(e *pb.Entry) (string, error) {
+func createTempFile(e *protobuf.Entry) (string, error) {
 	f, err := os.CreateTemp("", "*.json")
 	if err != nil {
 		return "", errors.Wrap(err, "creating temporary file")
@@ -103,8 +98,8 @@ func createTempFile(e *pb.Entry) (string, error) {
 }
 
 // readTmpFile reads the modified file and formats the card.
-func readTmpFile(filename string) (*pb.Entry, error) {
-	var e pb.Entry
+func readTmpFile(filename string) (*protobuf.Entry, error) {
+	var e protobuf.Entry
 
 	f, err := os.Open(filename)
 	if err != nil {
@@ -121,22 +116,22 @@ func readTmpFile(filename string) (*pb.Entry, error) {
 
 // updateEntry takes the name of the entry that's being edited to check if the name was
 // changed. If it was, it will remove the old one.
-func updateEntry(db *bolt.DB, name string, e *pb.Entry) error {
+func updateEntry(vault *bolt.DB, name string, e *protobuf.Entry) error {
 	if e.Name == "" {
-		return cmdutil.ErrInvalidName
+		return command_helper.ErrInvalidName
 	}
 
 	// Verify that the "expires" field has a valid format
-	expires, err := cmdutil.FormatExpires(e.Expires)
+	expires, err := command_helper.FormatExpires(e.Expires)
 	if err != nil {
 		return err
 	}
 
-	name = cmdutil.NormalizeName(name)
-	e.Name = cmdutil.NormalizeName(e.Name)
+	name = command_helper.NormalizeName(name)
+	e.Name = command_helper.NormalizeName(e.Name)
 	e.Expires = expires
 
-	if err := entry.Update(db, name, e); err != nil {
+	if err := entry.Update(vault, name, e); err != nil {
 		return err
 	}
 
@@ -144,7 +139,7 @@ func updateEntry(db *bolt.DB, name string, e *pb.Entry) error {
 	return nil
 }
 
-func useStdin(db *bolt.DB, r io.Reader, oldEntry *pb.Entry) error {
+func useStdin(vault *bolt.DB, r io.Reader, oldEntry *protobuf.Entry) error {
 	fmt.Println("Type '-' to clear the field (except Name and Password) or leave blank to use the current value")
 	reader := bufio.NewReader(r)
 
@@ -158,7 +153,7 @@ func useStdin(db *bolt.DB, r io.Reader, oldEntry *pb.Entry) error {
 		return value
 	}
 
-	newEntry := &pb.Entry{}
+	newEntry := &protobuf.Entry{}
 	newEntry.Name = scanln("Name", oldEntry.Name)
 	newEntry.Username = scanln("Username", oldEntry.Username)
 
@@ -190,11 +185,11 @@ func useStdin(db *bolt.DB, r io.Reader, oldEntry *pb.Entry) error {
 	}
 	newEntry.Notes = notes
 
-	return updateEntry(db, oldEntry.Name, newEntry)
+	return updateEntry(vault, oldEntry.Name, newEntry)
 }
 
-func useTextEditor(db *bolt.DB, oldEntry *pb.Entry) error {
-	editor := cmdutil.SelectEditor()
+func useTextEditor(vault *bolt.DB, oldEntry *protobuf.Entry) error {
+	editor := command_helper.SelectEditor()
 	bin, err := exec.LookPath(editor)
 	if err != nil {
 		return errors.Errorf("executable %q not found", editor)
@@ -205,8 +200,8 @@ func useTextEditor(db *bolt.DB, oldEntry *pb.Entry) error {
 		return err
 	}
 
-	sig.Signal.AddCleanup(func() error { return cmdutil.Erase(filename) })
-	defer cmdutil.Erase(filename)
+	sig.Signal.AddCleanup(func() error { return command_helper.Erase(filename) })
+	defer command_helper.Erase(filename)
 
 	// Open the temporary file with the selected text editor
 	edit := exec.Command(bin, filename)
@@ -219,7 +214,7 @@ func useTextEditor(db *bolt.DB, oldEntry *pb.Entry) error {
 
 	done := make(chan struct{}, 1)
 	errCh := make(chan error, 1)
-	go cmdutil.WatchFile(filename, done, errCh)
+	go command_helper.WatchFile(filename, done, errCh)
 
 	// Block until an event is received or an error occurs
 	select {
@@ -246,5 +241,5 @@ func useTextEditor(db *bolt.DB, oldEntry *pb.Entry) error {
 	newEntry.URL = rmTabs(newEntry.URL)
 	newEntry.Notes = rmTabs(newEntry.Notes)
 
-	return updateEntry(db, oldEntry.Name, newEntry)
+	return updateEntry(vault, oldEntry.Name, newEntry)
 }

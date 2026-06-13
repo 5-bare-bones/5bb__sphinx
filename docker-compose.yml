@@ -14,8 +14,8 @@ services:
       - ${HOME}/.kure:/{$HOME}/.kure
 
       # Bind mount: custom
-      - ${KURE_CONFIG}:/{$HOME}/.kure/kure.yaml # "database.path" field must point to the database inside the container
-      - <host/db/path>:/{$HOME}/.kure/kure.db # The database can be placed anywhere as long as its path is specified in the configuration file
+      - ${KURE_CONFIG}:/{$HOME}/.kure/kure.yaml # "vault.path" field must point to the vault inside the container
+      - <host/vault/path>:/{$HOME}/.kure/kure.db # The vault can be placed anywhere as long as its path is specified in the configuration file
 
   # In the case of kure-secure, the bind mount/volume must be owned by the same uid on both the host and the container. Docker does not support id-mapped mounts yet.
   # Run using "docker-compose run kure-secure"

@@ -6,10 +6,10 @@ import (
 	"io"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -20,28 +20,28 @@ const example = `
 sphinx card add Sample`
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
+func NewCmd(vault *bolt.DB, r io.Reader) *cobra.Command {
 	return &cobra.Command{
 		Use:     "add <name>",
 		Short:   "Add a card",
 		Aliases: []string{"create", "new"},
 		Example: example,
-		Args:    cmdutil.MustNotExist(db, cmdutil.Card),
-		RunE:    runAdd(db, r),
+		Args:    command_helper.MustNotExist(vault, command_helper.Card),
+		RunE:    runAdd(vault, r),
 	}
 }
 
-func runAdd(db *bolt.DB, r io.Reader) cmdutil.RunErrorFunction {
+func runAdd(vault *bolt.DB, r io.Reader) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
-		c, err := input(db, name, r)
+		c, err := input(vault, name, r)
 		if err != nil {
 			return err
 		}
 
-		if err := card.Create(db, c); err != nil {
+		if err := card.Create(vault, c); err != nil {
 			return err
 		}
 
@@ -50,9 +50,9 @@ func runAdd(db *bolt.DB, r io.Reader) cmdutil.RunErrorFunction {
 	}
 }
 
-func input(db *bolt.DB, name string, r io.Reader) (*pb.Card, error) {
+func input(vault *bolt.DB, name string, r io.Reader) (*protobuf.Card, error) {
 	reader := bufio.NewReader(r)
-	c := &pb.Card{
+	c := &protobuf.Card{
 		Name:         name,
 		Type:         terminal.ScanOneLine(reader, "Type"),
 		Number:       terminal.ScanOneLine(reader, "Number"),

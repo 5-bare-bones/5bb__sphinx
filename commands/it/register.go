@@ -12,7 +12,7 @@ func init() {
 		Verb:  "it",
 		Level: registry.TierApprentice,
 		New: func(c registry.BuildContext) *cobra.Command {
-			cmd := NewCmd(c.DB)
+			cmd := NewCmd(c.Vault)
 			// The interactive walker is renamed after the binary's rank
 			// (sphinx apprentice .. sphinx master), while "it" stays as an
 			// alias so muscle memory and docs keep working.

@@ -4,20 +4,20 @@ import (
 	"bytes"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/stretchr/testify/assert"
 	bolt "go.etcd.io/bbolt"
 )
 
 func TestDelete(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	names := []string{"test", "directory/test", "kure", "atoll"}
 	for _, name := range names {
-		err := entry.Create(db, &pb.Entry{Name: name})
+		err := entry.Create(vault, &protobuf.Entry{Name: name})
 		assert.NoErrorf(t, err, "Failed creating %q", name)
 	}
 
@@ -51,7 +51,7 @@ func TestDelete(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			buf := bytes.NewBufferString(tc.input)
-			cmd := NewCmd(db, buf)
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs(tc.names)
 
 			err := cmd.Execute()
@@ -59,7 +59,7 @@ func TestDelete(t *testing.T) {
 
 			if tc.input == "y" {
 				for _, name := range tc.names {
-					_, err := entry.Get(db, name)
+					_, err := entry.Get(vault, name)
 					assert.Error(t, err)
 				}
 			}
@@ -68,9 +68,9 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	createEntries(t, db, "random")
+	createEntries(t, vault, "random")
 
 	cases := []struct {
 		desc         string
@@ -95,7 +95,7 @@ func TestDeleteErrors(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			buf := bytes.NewBufferString(tc.confirmation)
-			cmd := NewCmd(db, buf)
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs(tc.names)
 
 			err := cmd.Execute()
@@ -108,7 +108,7 @@ func createEntries(t *testing.T, db *bolt.DB, names ...string) {
 	t.Helper()
 
 	for _, n := range names {
-		err := entry.Create(db, &pb.Entry{Name: n})
+		err := entry.Create(vault, &protobuf.Entry{Name: n})
 		assert.NoError(t, err)
 	}
 }

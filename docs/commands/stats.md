@@ -4,7 +4,7 @@
 
 ## Description
 
-Show database statistics.
+Show vault statistics.
 
 ## Flags 
 

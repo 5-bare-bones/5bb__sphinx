@@ -12,14 +12,14 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/commands/topt/add"
 	"github.com/5-bare-bones/5bb__sphinx/commands/topt/del"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
 	"github.com/5-bare-bones/5bb__sphinx/orderedmap"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
 	"github.com/5-bare-bones/5bb__sphinx/tree"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 	"github.com/pkg/errors"
 
 	"github.com/spf13/cobra"
@@ -42,7 +42,7 @@ type toptOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := toptOptions{}
 	cmd := &cobra.Command{
 		Use:     "topt <name>",
@@ -52,11 +52,11 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 
 Use the [-i info] flag to display information about the setup key, it also generates a QR code with the key in URL format that can be scanned by any authenticator.`,
 		Example: example,
-		Args:    cmdutil.MustExistList(db, cmdutil.TOTP),
-		RunE:    runTOPT(db, &opts),
+		Args:    command_helper.MustExistList(vault, command_helper.TOTP),
+		RunE:    runTOPT(vault, &opts),
 	}
 
-	cmd.AddCommand(add.NewCmd(db, os.Stdin), del.NewCmd(db, os.Stdin))
+	cmd.AddCommand(add.NewCmd(vault, os.Stdin), del.NewCmd(vault, os.Stdin))
 
 	f := cmd.Flags()
 	f.BoolVarP(&opts.copy, "copy", "c", false, "copy code to clipboard")
@@ -72,13 +72,13 @@ Use the [-i info] flag to display information about the setup key, it also gener
 	return cmd
 }
 
-func runTOPT(db *bolt.DB, opts *toptOptions) cmdutil.RunErrorFunction {
+func runTOPT(vault *bolt.DB, opts *toptOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
 		if name == "" {
-			totps, err := totp.ListNames(db)
+			totps, err := totp.ListNames(vault)
 			if err != nil {
 				return err
 			}
@@ -87,7 +87,7 @@ func runTOPT(db *bolt.DB, opts *toptOptions) cmdutil.RunErrorFunction {
 			return nil
 		}
 
-		t, err := totp.Get(db, name)
+		t, err := totp.Get(vault, name)
 		if err != nil {
 			return errors.Wrap(err, "topt")
 		}
@@ -98,7 +98,7 @@ func runTOPT(db *bolt.DB, opts *toptOptions) cmdutil.RunErrorFunction {
 
 		code := GenerateTOTP(t.Raw, time.Now(), int(t.Digits))
 		if opts.copy {
-			return cmdutil.WriteClipboard(cmd, opts.timeout, "TOTP", code)
+			return command_helper.WriteClipboard(cmd, opts.timeout, "TOTP", code)
 		}
 
 		fmt.Println(strings.Title(t.Name), code)
@@ -134,7 +134,7 @@ func GenerateTOTP(key string, t time.Time, digits int) string {
 	return fmt.Sprintf(format, mod)
 }
 
-func printKeyInfo(t *pb.TOTP) error {
+func printKeyInfo(t *protobuf.TOTP) error {
 	// https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 	URL := fmt.Sprintf("otpauth://totp/%s?secret=%s&digits=%d", strings.Title(t.Name), t.Raw, t.Digits)
 
@@ -146,7 +146,7 @@ func printKeyInfo(t *pb.TOTP) error {
 	mp.Set("Key", t.Raw)
 	mp.Set("Digits", fmt.Sprint(t.Digits))
 
-	box := cmdutil.BuildBox(t.Name, mp)
+	box := command_helper.BuildBox(t.Name, mp)
 	fmt.Println(box)
 	return nil
 }

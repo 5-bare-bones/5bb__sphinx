@@ -6,12 +6,12 @@ import (
 	"regexp"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/orderedmap"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
 	"github.com/5-bare-bones/5bb__sphinx/tree"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -32,15 +32,15 @@ type listOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := listOptions{}
 	cmd := &cobra.Command{
 		Use:     "list <name>",
 		Short:   "List cards",
 		Aliases: []string{"ls"},
 		Example: example,
-		Args:    cmdutil.MustExistList(db, cmdutil.Card),
-		RunE:    runList(db, &opts),
+		Args:    command_helper.MustExistList(vault, command_helper.Card),
+		RunE:    runList(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = listOptions{}
@@ -55,14 +55,14 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runList(db *bolt.DB, opts *listOptions) cmdutil.RunErrorFunction {
+func runList(vault *bolt.DB, opts *listOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
 		// List all
 		if name == "" {
-			cards, err := card.ListNames(db)
+			cards, err := card.ListNames(vault)
 			if err != nil {
 				return err
 			}
@@ -73,7 +73,7 @@ func runList(db *bolt.DB, opts *listOptions) cmdutil.RunErrorFunction {
 
 		// Filter by name
 		if opts.filter {
-			cards, err := card.ListNames(db)
+			cards, err := card.ListNames(vault)
 			if err != nil {
 				return err
 			}
@@ -99,7 +99,7 @@ func runList(db *bolt.DB, opts *listOptions) cmdutil.RunErrorFunction {
 		}
 
 		// List one
-		c, err := card.Get(db, name)
+		c, err := card.Get(vault, name)
 		if err != nil {
 			return err
 		}
@@ -113,7 +113,7 @@ func runList(db *bolt.DB, opts *listOptions) cmdutil.RunErrorFunction {
 	}
 }
 
-func printCard(name string, c *pb.Card, show bool) {
+func printCard(name string, c *protobuf.Card, show bool) {
 	if !show {
 		c.Number = "••••••••••••••••"
 		c.SecurityCode = "•••"
@@ -126,5 +126,5 @@ func printCard(name string, c *pb.Card, show bool) {
 	mp.Set("Expire date", c.ExpireDate)
 	mp.Set("Notes", c.Notes)
 
-	fmt.Println(cmdutil.BuildBox(name, mp))
+	fmt.Println(command_helper.BuildBox(name, mp))
 }

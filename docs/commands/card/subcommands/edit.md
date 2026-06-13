@@ -24,6 +24,7 @@ Tips:
 #### Text editors commands
 *Editor*: *value*
 ```
+Micro: micro
 Vim: vim
 Neovim: nvim
 Emacs: emacs

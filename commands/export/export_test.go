@@ -7,18 +7,18 @@ import (
 	"path/filepath"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
+	bolt "go.etcd.io/bbolt"
 
 	"github.com/stretchr/testify/assert"
-	bolt "go.etcd.io/bbolt"
 )
 
 func TestExport(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	createEntry(t, db)
+	vault := command_helper.SetContext(t)
+	createEntry(t, vault)
 
 	cases := []struct {
 		manager  string
@@ -69,7 +69,7 @@ func TestExport(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.manager, func(t *testing.T) {
-			cmd := NewCmd(db)
+			cmd := NewCmd(vault)
 			cmd.SetArgs([]string{tc.manager})
 			cmd.Flags().Set("path", tc.path)
 
@@ -94,7 +94,7 @@ func TestExport(t *testing.T) {
 }
 
 func TestInvalidExport(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc    string
@@ -108,7 +108,7 @@ func TestInvalidExport(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			cmd := NewCmd(db)
+			cmd := NewCmd(vault)
 			cmd.SetArgs([]string{tc.manager})
 			cmd.Flags().Set("path", tc.path)
 
@@ -119,8 +119,8 @@ func TestInvalidExport(t *testing.T) {
 }
 
 func TestArgs(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	cmd := NewCmd(db)
+	vault := command_helper.SetContext(t)
+	cmd := NewCmd(vault)
 
 	t.Run("Supported", func(t *testing.T) {
 		list := []string{"1password", "bitwarden", "keepass", "keepassx", "keepassxc", "lastpass"}
@@ -140,14 +140,14 @@ func TestArgs(t *testing.T) {
 }
 
 func TestGetTOTP(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	tp := &pb.TOTP{
+	tp := &protobuf.TOTP{
 		Name:   "test",
 		Raw:    "awtapr",
 		Digits: 6,
 	}
-	err := totp.Create(db, tp)
+	err := totp.Create(vault, tp)
 	assert.NoError(t, err, "Failed creating TOTP")
 
 	cases := []struct {
@@ -169,7 +169,7 @@ func TestGetTOTP(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			got := getTOTP(db, tc.name)
+			got := getTOTP(vault, tc.name)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
@@ -210,12 +210,12 @@ func TestPostRun(t *testing.T) {
 	NewCmd(nil).PostRun(nil, nil)
 }
 
-func createEntry(t *testing.T, db *bolt.DB) {
+func createEntry(t *testing.T, vault *bolt.DB) {
 	t.Helper()
-	e := &pb.Entry{
+	e := &protobuf.Entry{
 		Name:    "May the force be with you",
 		Expires: "Never",
 	}
-	err := entry.Create(db, e)
+	err := entry.Create(vault, e)
 	assert.NoError(t, err)
 }

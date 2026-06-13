@@ -6,11 +6,11 @@ import (
 	"io"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/commands/add/phrase"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/GGP1/atoll"
 
@@ -24,7 +24,7 @@ const example = `
 sphinx add Sample -c
 
 * Add an entry generating a random password
-sphinx add Sample -l 27 -L 1,2,3,4,5 -i & -e / -r`
+sphinx add Sample --length 27 --levels 1,2,3,4,5 --include & --exclude / --repeat`
 
 type addOptions struct {
 	include, exclude string
@@ -34,22 +34,22 @@ type addOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
+func NewCmd(vault *bolt.DB, r io.Reader) *cobra.Command {
 	opts := addOptions{}
 	cmd := &cobra.Command{
 		Use:     "add <name>",
 		Short:   "Add an entry",
 		Aliases: []string{"create", "new"},
 		Example: example,
-		Args:    cmdutil.MustNotExist(db, cmdutil.Entry),
-		RunE:    runAdd(db, r, &opts),
+		Args:    command_helper.MustNotExist(vault, command_helper.Entry),
+		RunE:    runAdd(vault, r, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = addOptions{}
 		},
 	}
 
-	cmd.AddCommand(phrase.NewCmd(db, r))
+	cmd.AddCommand(phrase.NewCmd(vault, r))
 
 	f := cmd.Flags()
 	f.BoolVarP(&opts.custom, "custom", "c", false, "use a custom password")
@@ -62,14 +62,14 @@ func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
 	return cmd
 }
 
-func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunErrorFunction {
+func runAdd(vault *bolt.DB, r io.Reader, opts *addOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
 		if !opts.custom {
 			if opts.length < 1 {
-				return cmdutil.ErrInvalidLength
+				return command_helper.ErrInvalidLength
 			}
 			if len(opts.levels) == 0 {
 				return errors.New("please specify levels")
@@ -89,7 +89,7 @@ func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunErrorFunction
 			}
 		}
 
-		if err := entry.Create(db, e); err != nil {
+		if err := entry.Create(vault, e); err != nil {
 			return err
 		}
 
@@ -135,7 +135,7 @@ func genPassword(opts *addOptions) (string, error) {
 	return string(password), nil
 }
 
-func entryInput(r io.Reader, name string, custom bool) (*pb.Entry, error) {
+func entryInput(r io.Reader, name string, custom bool) (*protobuf.Entry, error) {
 	var password string
 	reader := bufio.NewReader(r)
 
@@ -154,15 +154,15 @@ func entryInput(r io.Reader, name string, custom bool) (*pb.Entry, error) {
 		password = pwd.String()
 	}
 	url := terminal.ScanOneLine(reader, "URL")
-	expires := terminal.ScanOneLine(reader, "Expires [dd/mm/yy]")
+	expires := terminal.ScanOneLine(reader, "Expires [yyyy-mm-dd]")
 	notes := terminal.ScanMultipleLines(reader, "Notes")
 
-	exp, err := cmdutil.FormatExpires(expires)
+	exp, err := command_helper.FormatExpires(expires)
 	if err != nil {
 		return nil, err
 	}
 
-	entry := &pb.Entry{
+	entry := &protobuf.Entry{
 		Name:     name,
 		Username: username,
 		Password: password,

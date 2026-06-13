@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
 
 	"github.com/spf13/cobra"
 	bolt "go.etcd.io/bbolt"
@@ -27,15 +27,15 @@ type copyOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := copyOptions{}
 	cmd := &cobra.Command{
 		Use:     "copy <name>",
 		Short:   "Copy card number or security code",
 		Aliases: []string{"cp"},
 		Example: example,
-		Args:    cmdutil.MustExist(db, cmdutil.Card),
-		RunE:    runCard(db, &opts),
+		Args:    command_helper.MustExist(vault, command_helper.Card),
+		RunE:    runCard(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = copyOptions{}
@@ -49,12 +49,12 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runCard(db *bolt.DB, opts *copyOptions) cmdutil.RunErrorFunction {
+func runCard(vault *bolt.DB, opts *copyOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
-		c, err := card.Get(db, name)
+		c, err := card.Get(vault, name)
 		if err != nil {
 			return err
 		}
@@ -66,6 +66,6 @@ func runCard(db *bolt.DB, opts *copyOptions) cmdutil.RunErrorFunction {
 			copy = c.SecurityCode
 		}
 
-		return cmdutil.WriteClipboard(cmd, opts.timeout, field, copy)
+		return command_helper.WriteClipboard(cmd, opts.timeout, field, copy)
 	}
 }

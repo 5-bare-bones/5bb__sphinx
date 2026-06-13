@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
@@ -96,7 +96,7 @@ func BenchmarkWrite(b *testing.B) {
 
 func createEncodedEntry(b *testing.B) []byte {
 	b.Helper()
-	entry := &pb.Entry{
+	entry := &protobuf.Entry{
 		Name:     "benchmark",
 		Username: "benchMark",
 		Password: "@RyL8B0'/h{ .xpG9ZD!/itw7",

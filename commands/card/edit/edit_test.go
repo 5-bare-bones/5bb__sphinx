@@ -7,18 +7,18 @@ import (
 	"reflect"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/config"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
 
 	"github.com/stretchr/testify/assert"
 	bolt "go.etcd.io/bbolt"
 )
 
 func TestEditErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	createCard(t, db, "test")
+	vault := command_helper.SetContext(t)
+	createCard(t, vault, "test")
 
 	cases := []struct {
 		set  func()
@@ -41,7 +41,7 @@ func TestEditErrors(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -56,7 +56,7 @@ func TestEditErrors(t *testing.T) {
 }
 
 func TestCreateTempFile(t *testing.T) {
-	card := &pb.Card{Name: "test-create-file"}
+	card := &protobuf.Card{Name: "test-create-file"}
 	filename, err := createTempFile(card)
 	assert.NoError(t, err, "Failed creating the file")
 	defer os.Remove(filename)
@@ -64,7 +64,7 @@ func TestCreateTempFile(t *testing.T) {
 	content, err := os.ReadFile(filename)
 	assert.NoError(t, err, "Failed reading the file")
 
-	var got pb.Card
+	var got protobuf.Card
 	err = json.Unmarshal(content, &got)
 	assert.NoError(t, err, "Failed reading the file")
 
@@ -109,12 +109,12 @@ func TestReadTmpFile(t *testing.T) {
 }
 
 func TestUpdateCard(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 	name := "test_update"
-	createCard(t, db, name)
+	createCard(t, vault, name)
 
 	newName := "new_name"
-	newCard := &pb.Card{
+	newCard := &protobuf.Card{
 		Name:         newName,
 		Type:         "",
 		Number:       "12345678",
@@ -123,25 +123,25 @@ func TestUpdateCard(t *testing.T) {
 		Notes:        "",
 	}
 
-	err := updateCard(db, name, newCard)
+	err := updateCard(vault, name, newCard)
 	assert.NoError(t, err)
 
-	c, err := card.Get(db, newName)
+	c, err := card.Get(vault, newName)
 	assert.NoError(t, err)
 
 	assert.NotEqual(t, newCard, c)
 
 	t.Run("Invalid name", func(t *testing.T) {
 		newCard.Name = ""
-		err := updateCard(db, "fail", newCard)
+		err := updateCard(vault, "fail", newCard)
 		assert.Error(t, err)
 	})
 }
 
 func TestUseStdin(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	oldCard := &pb.Card{
+	oldCard := &protobuf.Card{
 		Name:         "test",
 		Type:         "",
 		Number:       "12345678",
@@ -152,10 +152,10 @@ func TestUseStdin(t *testing.T) {
 
 	buf := bytes.NewBufferString("\nCredit\n\n-\n\n-<\n")
 
-	err := useStdin(db, buf, oldCard)
+	err := useStdin(vault, buf, oldCard)
 	assert.NoError(t, err)
 
-	got, err := card.Get(db, "test")
+	got, err := card.Get(vault, "test")
 	assert.NoError(t, err)
 
 	assert.Equal(t, "Credit", got.Type)
@@ -169,8 +169,8 @@ func TestPostRun(t *testing.T) {
 	NewCmd(nil).PostRun(nil, nil)
 }
 
-func createCard(t *testing.T, db *bolt.DB, name string) {
+func createCard(t *testing.T, vault *bolt.DB, name string) {
 	t.Helper()
-	err := card.Create(db, &pb.Card{Name: name})
+	err := card.Create(vault, &protobuf.Card{Name: name})
 	assert.NoError(t, err, "Failed creating the card")
 }

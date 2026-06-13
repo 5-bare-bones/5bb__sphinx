@@ -14,6 +14,7 @@ Notes:
 #### Text editors commands
 *Editor*: *command*
 ```
+Micro: micro
 Vim: vim
 Neovim: nvim
 Emacs: emacs
@@ -47,7 +48,7 @@ Krita: krita
 
 Edit a file:
 ```
-sphinx file edit Sample -e nvim
+sphinx file edit Sample --editor micro
 ```
 
 Write a file's content to a temporary file and log its path:

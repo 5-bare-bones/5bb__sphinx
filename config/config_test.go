@@ -162,8 +162,8 @@ func TestGetUint32(t *testing.T) {
 func TestSetDefaults(t *testing.T) {
 	defaults := map[string]interface{}{
 		"clipboard.timeout": "0s",
-		"database.path":     "test",
-		"editor":            "vim",
+		"vault.path":        "test",
+		"editor":            "micro",
 		"keyfile.path":      "",
 		"session.prefix":    "sphinx:~ $",
 		"session.scripts": map[string]string{
@@ -193,7 +193,7 @@ func TestWriteStruct(t *testing.T) {
 		"clipboard": map[string]interface{}{
 			"timeout": "",
 		},
-		"database": map[string]interface{}{
+		"vault": map[string]interface{}{
 			"path": "",
 		},
 		"editor": "",

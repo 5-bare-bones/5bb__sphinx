@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/vault/bucket"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -25,14 +25,14 @@ type statsOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	opts := statsOptions{}
 	cmd := &cobra.Command{
 		Use:     "stats",
 		Aliases: []string{"statistics"},
-		Short:   "Show database statistics",
+		Short:   "Show vault statistics",
 		Example: example,
-		RunE:    runStats(db, &opts),
+		RunE:    runStats(vault, &opts),
 	}
 
 	f := cmd.Flags()
@@ -41,9 +41,9 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 	return cmd
 }
 
-func runStats(db *bolt.DB, opts *statsOptions) cmdutil.RunErrorFunction {
+func runStats(vault *bolt.DB, opts *statsOptions) command_helper.RunErrorFunction {
 	return func(_ *cobra.Command, _ []string) error {
-		tx, err := db.Begin(false)
+		tx, err := vault.Begin(false)
 		if err != nil {
 			return errors.Wrap(err, "opening transaction")
 		}

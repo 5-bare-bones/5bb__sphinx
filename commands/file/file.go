@@ -14,7 +14,7 @@ sphinx file (add|del|show|edit|list|move|touch)`
 // the registry with Parent "file" and is attached by commands/root. This lets
 // higher-tier subcommands (move, del — scholar) be gated independently of the
 // lower-tier ones (add, show, list, touch — adept).
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	return &cobra.Command{
 		Use:     "file",
 		Short:   "File operations",

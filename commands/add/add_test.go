@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAdd(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc   string
@@ -30,8 +30,8 @@ func TestAdd(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			buf := bytes.NewBufferString("username\nurl\n03/05/2024\nnotes<")
-			cmd := NewCmd(db, buf)
+			buf := bytes.NewBufferString("username\nurl\n2024-05-03\nnotes<")
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs([]string{tc.name})
 
 			f := cmd.Flags()
@@ -45,9 +45,9 @@ func TestAdd(t *testing.T) {
 }
 
 func TestAddErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	err := entry.Create(db, &pb.Entry{Name: "test"})
+	err := entry.Create(vault, &protobuf.Entry{Name: "test"})
 	assert.NoError(t, err)
 
 	cases := []struct {
@@ -80,8 +80,8 @@ func TestAddErrors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			buf := bytes.NewBufferString("username\nurl\n03/05/2024\nnotes<")
-			cmd := NewCmd(db, buf)
+			buf := bytes.NewBufferString("username\nurl\n2024-05-03\nnotes<")
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs([]string{tc.name})
 			f := cmd.Flags()
 			f.Set("length", tc.length)
@@ -147,15 +147,15 @@ func TestGenPasswordErrors(t *testing.T) {
 }
 
 func TestEntryInput(t *testing.T) {
-	expected := &pb.Entry{
+	expected := &protobuf.Entry{
 		Name:     "test",
 		Username: "username",
 		URL:      "url",
 		Notes:    "notes",
-		Expires:  "Fri, 03 May 2024 00:00:00 +0000",
+		Expires:  "2024-05-03",
 	}
 
-	buf := bytes.NewBufferString("username\nurl\n03/05/2024\nnotes<")
+	buf := bytes.NewBufferString("username\nurl\n2024-05-03\nnotes<")
 	got, err := entryInput(buf, "test", false)
 	assert.NoError(t, err, "Failed creating entry")
 

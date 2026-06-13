@@ -52,13 +52,13 @@ func TestKeepAlive(t *testing.T) {
 }
 
 func TestListenKeepAlive(t *testing.T) {
-	dbFile, err := os.CreateTemp("", "*")
+	vaultFile, err := os.CreateTemp("", "*")
 	assert.NoError(t, err)
 
-	db, err := bolt.Open(dbFile.Name(), 0o600, &bolt.Options{Timeout: 1 * time.Second})
-	assert.NoError(t, err, "Failed connecting to the database")
-	defer db.Close()
+	vault, err := bolt.Open(vaultFile.Name(), 0o600, &bolt.Options{Timeout: 1 * time.Second})
+	assert.NoError(t, err, "Failed connecting to the vault")
+	defer vault.Close()
 
-	Signal.Listen(db)
+	Signal.Listen(vault)
 	Signal.Interrupt()
 }

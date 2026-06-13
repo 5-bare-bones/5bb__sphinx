@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/atotto/clipboard"
 	"github.com/stretchr/testify/assert"
@@ -14,11 +14,11 @@ import (
 )
 
 func TestCat(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	name1 := "test.txt"
 	name2 := "testall2/subfolder/file.txt"
-	createFiles(t, db, name1, name2)
+	createFiles(t, vault, name1, name2)
 
 	cases := []struct {
 		desc     string
@@ -43,7 +43,7 @@ func TestCat(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			var buf bytes.Buffer
-			cmd := NewCmd(db, &buf)
+			cmd := NewCmd(vault, &buf)
 			cmd.SetArgs(tc.args)
 			cmd.Flags().Set("copy", tc.copy)
 
@@ -70,7 +70,7 @@ func TestCat(t *testing.T) {
 }
 
 func TestCatErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc string
@@ -88,7 +88,7 @@ func TestCatErrors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			cmd := NewCmd(db, nil)
+			cmd := NewCmd(vault, nil)
 			cmd.SetArgs(tc.args)
 
 			err := cmd.Execute()
@@ -101,17 +101,17 @@ func TestPostRun(t *testing.T) {
 	NewCmd(nil, nil).PostRun(nil, nil)
 }
 
-func createFiles(t *testing.T, db *bolt.DB, name1, name2 string) {
-	f1 := &pb.File{
+func createFiles(t *testing.T, vault *bolt.DB, name1, name2 string) {
+	f1 := &protobuf.File{
 		Name:    name1,
 		Content: []byte("test"),
 	}
-	err := file.Create(db, f1)
+	err := file.Create(vault, f1)
 	assert.NoError(t, err, "Failed creating first file")
-	f2 := &pb.File{
+	f2 := &protobuf.File{
 		Name:    name2,
 		Content: []byte("testing file"),
 	}
-	err = file.Create(db, f2)
+	err = file.Create(vault, f2)
 	assert.NoError(t, err, "Failed creating second file")
 }

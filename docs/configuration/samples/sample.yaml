@@ -5,10 +5,10 @@
 clipboard:
   timeout: "5s" # Set to "0s" or leave blank for no timeout
 
-database:
+vault:
   path: "/home/user/kure.db" # Must be absolute
 
-editor: "vim"
+editor: "micro"
 
 keyfile:
   path: "/home/user/sample.key" # Must be absolute

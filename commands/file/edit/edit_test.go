@@ -5,17 +5,17 @@ import (
 	"testing"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEditErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	err := file.Create(db, &pb.File{Name: "test"})
+	err := file.Create(vault, &protobuf.File{Name: "test"})
 	assert.NoError(t, err, "Failed creating file")
 
 	cases := []struct {
@@ -42,7 +42,7 @@ func TestEditErrors(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			cmd := NewCmd(db)
+			cmd := NewCmd(vault)
 			cmd.SetArgs([]string{tc.name})
 			cmd.Flags().Set("editor", tc.editor)
 
@@ -81,19 +81,19 @@ func TestWatchFile(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	expectedContent := []byte("test")
 	name := "test_read_and_update.txt"
-	f := &pb.File{
+	f := &protobuf.File{
 		Name:    name,
 		Content: expectedContent,
 	}
 
-	err := update(db, f, "../testdata/test_read&update.txt")
+	err := update(vault, f, "../testdata/test_read&update.txt")
 	assert.NoError(t, err, "Updating record")
 
-	got, err := file.Get(db, name)
+	got, err := file.Get(vault, name)
 	assert.NoError(t, err, "The file wasn't created")
 
 	assert.Equal(t, expectedContent, got.Content)

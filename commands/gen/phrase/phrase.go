@@ -5,7 +5,7 @@ import (
 	"math"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/GGP1/atoll"
@@ -87,10 +87,10 @@ Average time taken to crack is based on a brute force attack scenario where the 
 	return cmd
 }
 
-func runPhrase(opts *phraseOptions) cmdutil.RunErrorFunction {
+func runPhrase(opts *phraseOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		if opts.length < 1 {
-			return cmdutil.ErrInvalidLength
+			return command_helper.ErrInvalidLength
 		}
 
 		// Use Wordlist list as default
@@ -147,7 +147,7 @@ Average time taken to crack: %s
 		}
 
 		if opts.copy {
-			if err := cmdutil.WriteClipboard(cmd, 0, "Passphrase", phraseBuf.String()); err != nil {
+			if err := command_helper.WriteClipboard(cmd, 0, "Passphrase", phraseBuf.String()); err != nil {
 				return err
 			}
 		}

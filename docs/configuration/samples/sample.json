@@ -2,10 +2,10 @@
   "clipboard": {
     "timeout": "5s"
   },
-  "database": {
-    "path": "/home/user/kure.db"
+  "vault": {
+    "path": "/home/user/sphinx.db"
   },
-  "editor": "vim",
+  "editor": "micro",
   "keyfile": {
     "path": "/home/user/sample.key"
   },

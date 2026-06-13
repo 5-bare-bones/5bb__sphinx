@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
+	bolt "go.etcd.io/bbolt"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	bolt "go.etcd.io/bbolt"
 )
 
 // selectCommands recursively looks for commands and returns a slice with all of them.
@@ -82,7 +82,7 @@ func selectFlags(root *cobra.Command, commands []string) ([]string, error) {
 	return strings.Split(flags, " "), nil
 }
 
-func selectName(db *bolt.DB, commands []string) (string, error) {
+func selectName(vault *bolt.DB, commands []string) (string, error) {
 	var (
 		list    []string
 		err     error
@@ -91,17 +91,17 @@ func selectName(db *bolt.DB, commands []string) (string, error) {
 
 	switch commands[0] {
 	case "topt":
-		list, err = totp.ListNames(db)
+		list, err = totp.ListNames(vault)
 		message = "Choose a TOTP:"
 
 	case "card":
-		list, err = card.ListNames(db)
+		list, err = card.ListNames(vault)
 
 	case "file":
-		list, err = file.ListNames(db)
+		list, err = file.ListNames(vault)
 
 	case "list", "copy", "edit", "del":
-		list, err = entry.ListNames(db)
+		list, err = entry.ListNames(vault)
 		message = "Choose an entry:"
 	}
 	if err != nil {
@@ -132,7 +132,7 @@ func selectName(db *bolt.DB, commands []string) (string, error) {
 	return chosen.Name, nil
 }
 
-func selectManager(db *bolt.DB) (string, error) {
+func selectManager(vault *bolt.DB) (string, error) {
 	list := []string{"1Password", "Bitwarden", "Keepass", "KeepassXC", "Lastpass"}
 	qs := selectQs("Choose a manager:", "", list)
 	manager := struct{ Name string }{}

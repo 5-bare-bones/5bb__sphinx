@@ -5,17 +5,17 @@ import (
 	"os"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
+	bolt "go.etcd.io/bbolt"
 
 	"github.com/stretchr/testify/assert"
-	bolt "go.etcd.io/bbolt"
 )
 
 func TestTouch(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	createTestFiles(t, db)
+	vault := command_helper.SetContext(t)
+	createTestFiles(t, vault)
 
 	rootDir, err := os.Getwd()
 	assert.NoError(t, err)
@@ -46,7 +46,7 @@ func TestTouch(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -74,12 +74,12 @@ func TestPostRun(t *testing.T) {
 	NewCmd(nil).PostRun(nil, nil)
 }
 
-func createTestFiles(t *testing.T, db *bolt.DB) {
+func createTestFiles(t *testing.T, vault *bolt.DB) {
 	t.Helper()
 
 	names := []string{"test.txt", "testAll/file.csv", "testAll/file.pdf", "testdata/subfolder/file.txt"}
 	for _, name := range names {
-		err := file.Create(db, &pb.File{Name: cmdutil.NormalizeName(name)})
+		err := file.Create(vault, &protobuf.File{Name: command_helper.NormalizeName(name)})
 		assert.NoErrorf(t, err, "Failed creating %q", name)
 	}
 }

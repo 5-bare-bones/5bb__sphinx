@@ -3,17 +3,17 @@ package list
 import (
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/stretchr/testify/assert"
 	bolt "go.etcd.io/bbolt"
 )
 
 func TestList(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	createEntry(t, db, "test", "testing")
+	vault := command_helper.SetContext(t)
+	createEntry(t, vault, "test", "testing")
 
 	cases := []struct {
 		desc   string
@@ -47,7 +47,7 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -64,8 +64,8 @@ func TestList(t *testing.T) {
 }
 
 func TestListErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	createEntry(t, db, "test", "")
+	vault := command_helper.SetContext(t)
+	createEntry(t, vault, "test", "")
 
 	cases := []struct {
 		desc   string
@@ -94,7 +94,7 @@ func TestListErrors(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -110,10 +110,10 @@ func TestListErrors(t *testing.T) {
 }
 
 func TestQRCodeError(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	createEntry(t, db, "test", longSecret)
+	vault := command_helper.SetContext(t)
+	createEntry(t, vault, "test", longSecret)
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	cmd.SetArgs([]string{"test"})
 	cmd.Flags().Set("qr", "true")
 
@@ -152,15 +152,15 @@ func TestPostRun(t *testing.T) {
 	NewCmd(nil).PostRun(nil, nil)
 }
 
-func createEntry(t *testing.T, db *bolt.DB, name, password string) {
+func createEntry(t *testing.T, vault *bolt.DB, name, password string) {
 	t.Helper()
 
-	e := &pb.Entry{
+	e := &protobuf.Entry{
 		Name:     name,
 		Password: password,
 		Expires:  "Mon, 01 Jan 2021 15:04:05 -0700",
 	}
-	err := entry.Create(db, e)
+	err := entry.Create(vault, e)
 	assert.NoError(t, err)
 }
 

@@ -4,16 +4,16 @@ import (
 	"encoding/binary"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 
 	"github.com/stretchr/testify/assert"
 	bolt "go.etcd.io/bbolt"
 )
 
 func TestArgon2(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	err := db.Update(func(tx *bolt.Tx) error {
+	err := vault.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte("kure_auth"))
 		if err != nil {
 			return err
@@ -32,7 +32,7 @@ func TestArgon2(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	err = NewCmd(db).Execute()
+	err = NewCmd(vault).Execute()
 	assert.NoError(t, err, "Failed printing argon2 parameters")
 	// Output:
 	// Iterations: 1

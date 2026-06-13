@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/config"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 
 	"github.com/atotto/clipboard"
 	"github.com/stretchr/testify/assert"
@@ -19,8 +19,8 @@ func TestTOPT(t *testing.T) {
 	if clipboard.Unsupported {
 		t.Skip("No clipboard utilities available")
 	}
-	db := cmdutil.SetContext(t)
-	createElements(t, db)
+	vault := command_helper.SetContext(t)
+	createElements(t, vault)
 
 	cases := []struct {
 		desc    string
@@ -55,7 +55,7 @@ func TestTOPT(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 	config.Set("clipboard.timeout", "1ns") // Set default
 
 	for _, tc := range cases {
@@ -73,7 +73,7 @@ func TestTOPT(t *testing.T) {
 }
 
 func TestTOPTErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc string
@@ -85,7 +85,7 @@ func TestTOPTErrors(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -134,11 +134,11 @@ func TestPostRun(t *testing.T) {
 	NewCmd(nil).PostRun(nil, nil)
 }
 
-func createElements(t *testing.T, db *bolt.DB) {
+func createElements(t *testing.T, vault *bolt.DB) {
 	t.Helper()
-	err := entry.Create(db, &pb.Entry{Name: "test"})
+	err := entry.Create(vault, &protobuf.Entry{Name: "test"})
 	assert.NoError(t, err)
 
-	err = totp.Create(db, &pb.TOTP{Name: "test", Raw: "AG5H1H2"})
+	err = totp.Create(vault, &protobuf.TOTP{Name: "test", Raw: "AG5H1H2"})
 	assert.NoError(t, err)
 }

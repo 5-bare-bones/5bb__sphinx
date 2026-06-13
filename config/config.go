@@ -128,11 +128,11 @@ func Set(key string, value interface{}) {
 }
 
 // SetDefaults populates the config map with the default values.
-func SetDefaults(dbPath string) {
+func SetDefaults(vaultPath string) {
 	defaults := map[string]interface{}{
 		"clipboard.timeout": "0s",
-		"database.path":     dbPath,
-		"editor":            "vim",
+		"vault.path":        vaultPath,
+		"editor":            "micro",
 		"keyfile.path":      "",
 		"session.prefix":    "sphinx:~ $",
 		"session.scripts": map[string]string{
@@ -171,7 +171,7 @@ func WriteStruct(filename string) error {
 		"clipboard": map[string]interface{}{
 			"timeout": "",
 		},
-		"database": map[string]interface{}{
+		"vault": map[string]interface{}{
 			"path": "",
 		},
 		"editor": "",

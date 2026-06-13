@@ -5,11 +5,11 @@ import (
 	"os"
 
 	"github.com/5-bare-bones/5bb__sphinx/auth"
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/crypt"
-	dbutil "github.com/5-bare-bones/5bb__sphinx/db"
-	"github.com/5-bare-bones/5bb__sphinx/db/bucket"
 	"github.com/5-bare-bones/5bb__sphinx/sig"
+	vault_helper "github.com/5-bare-bones/5bb__sphinx/vault"
+	"github.com/5-bare-bones/5bb__sphinx/vault/bucket"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -17,20 +17,20 @@ import (
 )
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	return &cobra.Command{
 		Use:   "restore",
-		Short: "Restore the database using new credentials",
-		Long: `Restore the database using new credentials.
+		Short: "Restore the vault using new credentials",
+		Long: `Restore the vault using new credentials.
 
 Overwrite the registered credentials and re-encrypt every record with the new ones.
 
 WARNING: this command is computationally expensive, it may cause memory (OOM) and CPU errors.`,
-		RunE: runRestore(db),
+		RunE: runRestore(vault),
 	}
 }
 
-func runRestore(db *bolt.DB) cmdutil.RunErrorFunction {
+func runRestore(vault *bolt.DB) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		buckets := bucket.GetNames()
 		logs := make([]*log, 0, len(buckets))
@@ -45,17 +45,17 @@ func runRestore(db *bolt.DB) cmdutil.RunErrorFunction {
 			logs = append(logs, log)
 		}
 
-		if err := writeLogs(db, logs); err != nil {
+		if err := writeLogs(vault, logs); err != nil {
 			return errors.Wrap(err, "writing logs")
 		}
 
 		// Initialize registration and re-encrypt the records with the new credentials
-		if err := auth.Register(db, os.Stdin); err != nil {
+		if err := auth.Register(vault, os.Stdin); err != nil {
 			return err
 		}
 		fmt.Println("Re-encrypting records...")
 
-		if err := readLogs(db, logs); err != nil {
+		if err := readLogs(vault, logs); err != nil {
 			return errors.Wrap(err, "recreating records")
 		}
 
@@ -63,8 +63,8 @@ func runRestore(db *bolt.DB) cmdutil.RunErrorFunction {
 	}
 }
 
-func readLogs(db *bolt.DB, logs []*log) error {
-	tx, err := db.Begin(true)
+func readLogs(vault *bolt.DB, logs []*log) error {
+	tx, err := vault.Begin(true)
 	if err != nil {
 		return errors.Wrap(err, "starting transaction")
 	}
@@ -91,7 +91,7 @@ func readLogs(db *bolt.DB, logs []*log) error {
 				return errors.Wrap(err, "encrypt record value")
 			}
 
-			xorKey := dbutil.XorName(newKey)
+			xorKey := vault_helper.XorName(newKey)
 			if err := b.Put(xorKey, encValue); err != nil {
 				return errors.Wrap(err, "saving new record")
 			}
@@ -101,8 +101,8 @@ func readLogs(db *bolt.DB, logs []*log) error {
 	return tx.Commit()
 }
 
-func writeLogs(db *bolt.DB, logs []*log) error {
-	tx, err := db.Begin(false)
+func writeLogs(vault *bolt.DB, logs []*log) error {
+	tx, err := vault.Begin(false)
 	if err != nil {
 		return errors.Wrap(err, "starting transaction")
 	}
@@ -121,7 +121,7 @@ func writeLogs(db *bolt.DB, logs []*log) error {
 				return errors.Wrap(err, "writing old key")
 			}
 
-			xorKey := dbutil.XorName(k)
+			xorKey := vault_helper.XorName(k)
 			if err := l.Write(xorKey); err != nil {
 				return errors.Wrap(err, "writing new key")
 			}

@@ -4,19 +4,19 @@ import (
 	"bytes"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDelete(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	names := []string{"test", "directory/test", "kure", "atoll"}
 	for _, name := range names {
-		err := card.Create(db, &pb.Card{Name: name})
+		err := card.Create(vault, &protobuf.Card{Name: name})
 		assert.NoErrorf(t, err, "Failed creating %q", name)
 	}
 
@@ -50,7 +50,7 @@ func TestDelete(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			buf := bytes.NewBufferString(tc.input)
-			cmd := NewCmd(db, buf)
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs(tc.names)
 
 			err := cmd.Execute()
@@ -58,7 +58,7 @@ func TestDelete(t *testing.T) {
 
 			if tc.input == "y" {
 				for _, name := range tc.names {
-					_, err := card.Get(db, name)
+					_, err := card.Get(vault, name)
 					assert.Error(t, err)
 				}
 			}
@@ -67,10 +67,10 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	name := "random"
-	err := card.Create(db, &pb.Card{Name: name})
+	err := card.Create(vault, &protobuf.Card{Name: name})
 	assert.NoErrorf(t, err, "Failed creating %q", name)
 
 	cases := []struct {
@@ -96,7 +96,7 @@ func TestDeleteErrors(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			buf := bytes.NewBufferString(tc.confirmation)
-			cmd := NewCmd(db, buf)
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs(tc.names)
 
 			err := cmd.Execute()

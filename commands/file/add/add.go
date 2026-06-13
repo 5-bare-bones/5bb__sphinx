@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -41,20 +41,20 @@ type addOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
+func NewCmd(vault *bolt.DB, r io.Reader) *cobra.Command {
 	opts := addOptions{}
 	cmd := &cobra.Command{
 		Use:   "add <name>",
-		Short: "Add files to the database",
-		Long: `Add files to the database. As they are stored in a database, the whole file is read into memory, please have this into account when adding new ones.
+		Short: "Add files to the vault",
+		Long: `Add files to the vault. As they are stored in a vault, the whole file is read into memory, please have this into account when adding new ones.
 
 Path to a file must include its extension (in case it has one).
 
-The user can specify a path to a folder as well, on this occasion, sphinx will iterate over all the files in the folder and potential subfolders (if the -i flag is false) and store them into the database with the name "name/subfolders/filename". Empty folders will be skipped.`,
+The user can specify a path to a folder as well, on this occasion, sphinx will iterate over all the files in the folder and potential subfolders (if the -i flag is false) and store them into the vault with the name "name/subfolders/filename". Empty folders will be skipped.`,
 		Aliases: []string{"new"},
 		Example: example,
-		Args:    cmdutil.MustNotExist(db, cmdutil.File),
-		RunE:    runAdd(db, r, &opts),
+		Args:    command_helper.MustNotExist(vault, command_helper.File),
+		RunE:    runAdd(vault, r, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = addOptions{
@@ -72,13 +72,13 @@ The user can specify a path to a folder as well, on this occasion, sphinx will i
 	return cmd
 }
 
-func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunErrorFunction {
+func runAdd(vault *bolt.DB, r io.Reader, opts *addOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
 		if opts.note {
-			return addNote(db, r, name)
+			return addNote(vault, r, name)
 		}
 
 		if opts.semaphore < 1 {
@@ -93,7 +93,7 @@ func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunErrorFunction
 		dir, err := os.ReadDir(opts.path)
 		if err != nil {
 			// If it's not a directory, attempt storing a file
-			return storeFile(db, opts.path, name)
+			return storeFile(vault, opts.path, name)
 		}
 
 		if len(dir) == 0 {
@@ -106,14 +106,14 @@ func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunErrorFunction
 		var wg sync.WaitGroup
 		sem := make(chan struct{}, opts.semaphore)
 		wg.Add(len(dir))
-		walkDir(db, dir, opts.path, name, opts.ignore, &wg, sem)
+		walkDir(vault, dir, opts.path, name, opts.ignore, &wg, sem)
 		wg.Wait()
 		return nil
 	}
 }
 
 // walkDir iterates over the items of a folder and calls checkFile.
-func walkDir(db *bolt.DB, dir []os.DirEntry, path, name string, ignore bool, wg *sync.WaitGroup, sem chan struct{}) {
+func walkDir(vault *bolt.DB, dir []os.DirEntry, path, name string, ignore bool, wg *sync.WaitGroup, sem chan struct{}) {
 	for _, f := range dir {
 		// If it's not a directory or a regular file, skip
 		if !f.IsDir() && !f.Type().IsRegular() {
@@ -121,7 +121,7 @@ func walkDir(db *bolt.DB, dir []os.DirEntry, path, name string, ignore bool, wg 
 			continue
 		}
 
-		go checkFile(db, f, path, name, ignore, wg, sem)
+		go checkFile(vault, f, path, name, ignore, wg, sem)
 	}
 }
 
@@ -132,7 +132,7 @@ func walkDir(db *bolt.DB, dir []os.DirEntry, path, name string, ignore bool, wg 
 // If it's a folder it repeats the process until there are no left files to store.
 //
 // Errors are not returned but logged.
-func checkFile(db *bolt.DB, file os.DirEntry, path, name string, ignore bool, wg *sync.WaitGroup, sem chan struct{}) {
+func checkFile(vault *bolt.DB, file os.DirEntry, path, name string, ignore bool, wg *sync.WaitGroup, sem chan struct{}) {
 	defer func() {
 		wg.Done()
 		<-sem
@@ -146,7 +146,7 @@ func checkFile(db *bolt.DB, file os.DirEntry, path, name string, ignore bool, wg
 	path = filepath.Join(path, file.Name())
 
 	if !file.IsDir() {
-		if err := storeFile(db, path, name); err != nil {
+		if err := storeFile(vault, path, name); err != nil {
 			fmt.Fprintln(os.Stderr, "error:", err)
 		}
 		return
@@ -165,18 +165,18 @@ func checkFile(db *bolt.DB, file os.DirEntry, path, name string, ignore bool, wg
 
 	if len(subdir) != 0 {
 		wg.Add(len(subdir))
-		go walkDir(db, subdir, path, name, ignore, wg, sem)
+		go walkDir(vault, subdir, path, name, ignore, wg, sem)
 	}
 }
 
-// storeFile reads and saves a file into the database.
-func storeFile(db *bolt.DB, path, filename string) error {
+// storeFile reads and saves a file into the vault.
+func storeFile(vault *bolt.DB, path, filename string) error {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return errors.Wrap(err, "reading file")
 	}
 
-	f := &pb.File{
+	f := &protobuf.File{
 		Name:      strings.ToLower(filename),
 		Content:   content,
 		Size:      int64(len(content)),
@@ -189,24 +189,24 @@ func storeFile(db *bolt.DB, path, filename string) error {
 	abs, _ := filepath.Abs(path)
 
 	fmt.Println("Add:", abs)
-	return file.Create(db, f)
+	return file.Create(vault, f)
 }
 
 // addNote takes input from the user and creates a file inside the "notes" folder
 // and with the .txt extension.
-func addNote(db *bolt.DB, r io.Reader, name string) error {
+func addNote(vault *bolt.DB, r io.Reader, name string) error {
 	name = "notes/" + name
 	if filepath.Ext(name) == "" {
 		name += ".txt"
 	}
 
-	if err := cmdutil.Exists(db, name, cmdutil.File); err != nil {
+	if err := command_helper.Exists(vault, name, command_helper.File); err != nil {
 		return err
 	}
 
 	text := terminal.ScanMultipleLines(bufio.NewReader(r), "Text")
 
-	f := &pb.File{
+	f := &protobuf.File{
 		Name:      name,
 		Content:   []byte(text),
 		Size:      int64(len(text)),
@@ -215,5 +215,5 @@ func addNote(db *bolt.DB, r io.Reader, name string) error {
 	}
 
 	fmt.Println("Add:", name)
-	return file.Create(db, f)
+	return file.Create(vault, f)
 }

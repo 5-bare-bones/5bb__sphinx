@@ -5,14 +5,14 @@ import (
 	"net/url"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAdd(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	cases := []struct {
 		desc   string
@@ -50,7 +50,7 @@ func TestAdd(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			buf := bytes.NewBufferString(tc.input)
-			cmd := NewCmd(db, buf)
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs([]string{tc.name})
 
 			f := cmd.Flags()
@@ -64,10 +64,10 @@ func TestAdd(t *testing.T) {
 }
 
 func TestAddErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	name := "test"
-	err := createTOTP(db, name, "", 0)
+	err := createTOTP(vault, name, "", 0)
 	assert.NoError(t, err)
 
 	cases := []struct {
@@ -116,7 +116,7 @@ func TestAddErrors(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
 			buf := bytes.NewBufferString(tc.input)
-			cmd := NewCmd(db, buf)
+			cmd := NewCmd(vault, buf)
 			cmd.SetArgs([]string{tc.name})
 
 			f := cmd.Flags()
@@ -130,19 +130,19 @@ func TestAddErrors(t *testing.T) {
 }
 
 func TestCreateTOTP(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
 	t.Run("Success", func(t *testing.T) {
 		name := "test"
-		err := createTOTP(db, name, "secret", 6)
+		err := createTOTP(vault, name, "secret", 6)
 		assert.NoError(t, err, "Failed creating TOTP")
 
-		_, err = totp.Get(db, name)
+		_, err = totp.Get(vault, name)
 		assert.NoErrorf(t, err, "%q TOTP not found", name)
 	})
 
 	t.Run("Fail", func(t *testing.T) {
-		err := createTOTP(db, "", "", 0)
+		err := createTOTP(vault, "", "", 0)
 		assert.Error(t, err)
 	})
 }

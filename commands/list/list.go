@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/orderedmap"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
 	"github.com/5-bare-bones/5bb__sphinx/tree"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -31,13 +31,13 @@ sphinx list Sample -f
 * List all
 sphinx list`
 
-type lsOptions struct {
+type listOptions struct {
 	filter, qr, show bool
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB) *cobra.Command {
-	opts := lsOptions{}
+func NewCmd(vault *bolt.DB) *cobra.Command {
+	opts := listOptions{}
 	cmd := &cobra.Command{
 		Use:     "list <name>",
 		Aliases: []string{"ls", "entries"},
@@ -46,11 +46,11 @@ func NewCmd(db *bolt.DB) *cobra.Command {
 
 Listing all the entries does not check for expired entries, this decision was taken to prevent high loads when the number of entries is elevated. Listing a single entry does notifies if it is expired.`,
 		Example: example,
-		Args:    cmdutil.MustExistList(db, cmdutil.Entry),
-		RunE:    runList(db, &opts),
+		Args:    command_helper.MustExistList(vault, command_helper.Entry),
+		RunE:    runList(vault, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
-			opts = lsOptions{}
+			opts = listOptions{}
 		},
 	}
 
@@ -62,14 +62,14 @@ Listing all the entries does not check for expired entries, this decision was ta
 	return cmd
 }
 
-func runList(db *bolt.DB, opts *lsOptions) cmdutil.RunErrorFunction {
+func runList(vault *bolt.DB, opts *listOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
 		// List all
 		if name == "" {
-			entries, err := entry.ListNames(db)
+			entries, err := entry.ListNames(vault)
 			if err != nil {
 				return err
 			}
@@ -80,7 +80,7 @@ func runList(db *bolt.DB, opts *lsOptions) cmdutil.RunErrorFunction {
 
 		// Filter by name
 		if opts.filter {
-			entries, err := entry.ListNames(db)
+			entries, err := entry.ListNames(vault)
 			if err != nil {
 				return err
 			}
@@ -106,7 +106,7 @@ func runList(db *bolt.DB, opts *lsOptions) cmdutil.RunErrorFunction {
 		}
 
 		// List one
-		e, err := entry.Get(db, name)
+		e, err := entry.Get(vault, name)
 		if err != nil {
 			return err
 		}
@@ -120,7 +120,7 @@ func runList(db *bolt.DB, opts *lsOptions) cmdutil.RunErrorFunction {
 	}
 }
 
-func printEntry(name string, e *pb.Entry, show bool) {
+func printEntry(name string, e *protobuf.Entry, show bool) {
 	if !show {
 		e.Password = "•••••••••••••••"
 	}
@@ -136,16 +136,20 @@ func printEntry(name string, e *pb.Entry, show bool) {
 	mp.Set("Expires", e.Expires)
 	mp.Set("Notes", e.Notes)
 
-	fmt.Println(cmdutil.BuildBox(name, mp))
+	fmt.Println(command_helper.BuildBox(name, mp))
 }
 
-// expired returns if the entry is expired or not.
+// expired reports whether the entry's ISO expiration date is in the past.
 func expired(expires string) bool {
 	if expires == "Never" {
 		return false
 	}
 
-	// Error is always nil as "expires" field was already formatted before being saved
-	expiration, _ := time.Parse(time.RFC1123Z, expires)
+	// Stored as an ISO date (YYYY-MM-DD). An unparseable value (e.g. legacy
+	// data) is treated as not expired rather than silently marking it EXPIRED.
+	expiration, err := time.Parse("2006-01-02", expires)
+	if err != nil {
+		return false
+	}
 	return time.Now().After(expiration)
 }

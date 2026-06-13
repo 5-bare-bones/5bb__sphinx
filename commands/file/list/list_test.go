@@ -4,17 +4,17 @@ import (
 	"testing"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestList(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	err := file.Create(db, &pb.File{Name: "test.txt"})
+	err := file.Create(vault, &protobuf.File{Name: "test.txt"})
 	assert.NoError(t, err, "Failed creating file")
 
 	cases := []struct {
@@ -37,7 +37,7 @@ func TestList(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -52,9 +52,9 @@ func TestList(t *testing.T) {
 }
 
 func TestListErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 
-	err := file.Create(db, &pb.File{Name: "test.txt"})
+	err := file.Create(vault, &protobuf.File{Name: "test.txt"})
 	assert.NoError(t, err, "Failed creating file")
 
 	cases := []struct {
@@ -78,7 +78,7 @@ func TestListErrors(t *testing.T) {
 		},
 	}
 
-	cmd := NewCmd(db)
+	cmd := NewCmd(vault)
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -121,7 +121,7 @@ func TestPrintFile(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			printFile(&pb.FileCheap{Size: tc.size})
+			printFile(&protobuf.FileCheap{Size: tc.size})
 		})
 	}
 }
@@ -143,7 +143,7 @@ func TestPrintFileUpdatedAt(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.desc, func(t *testing.T) {
-			printFile(&pb.FileCheap{UpdatedAt: tc.time})
+			printFile(&protobuf.FileCheap{UpdatedAt: tc.time})
 		})
 	}
 }

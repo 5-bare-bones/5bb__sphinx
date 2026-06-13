@@ -8,10 +8,10 @@ import (
 	"net/url"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -31,7 +31,7 @@ type addOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
+func NewCmd(vault *bolt.DB, r io.Reader) *cobra.Command {
 	opts := addOptions{}
 	cmd := &cobra.Command{
 		Use:   "add <name>",
@@ -48,9 +48,9 @@ func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
 				return nil
 			}
 
-			return cmdutil.MustNotExist(db, cmdutil.TOTP)(cmd, args)
+			return command_helper.MustNotExist(vault, command_helper.TOTP)(cmd, args)
 		},
-		RunE: runAdd(db, r, &opts),
+		RunE: runAdd(vault, r, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			opts = addOptions{
 				digits: 6,
@@ -65,20 +65,20 @@ func NewCmd(db *bolt.DB, r io.Reader) *cobra.Command {
 	return cmd
 }
 
-func runAdd(db *bolt.DB, r io.Reader, opts *addOptions) cmdutil.RunErrorFunction {
+func runAdd(vault *bolt.DB, r io.Reader, opts *addOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		name := strings.Join(args, " ")
-		name = cmdutil.NormalizeName(name)
+		name = command_helper.NormalizeName(name)
 
 		if opts.url {
-			return addWithURL(db, r)
+			return addWithURL(vault, r)
 		}
 
-		return addWithKey(db, r, name, opts.digits)
+		return addWithKey(vault, r, name, opts.digits)
 	}
 }
 
-func addWithKey(db *bolt.DB, r io.Reader, name string, digits int32) error {
+func addWithKey(vault *bolt.DB, r io.Reader, name string, digits int32) error {
 	if digits < 6 || digits > 8 {
 		return errors.Errorf("invalid digits number [%d], it must be either 6, 7 or 8", digits)
 	}
@@ -93,11 +93,11 @@ func addWithKey(db *bolt.DB, r io.Reader, name string, digits int32) error {
 		return errors.Wrap(err, "invalid key")
 	}
 
-	return createTOTP(db, name, key, digits)
+	return createTOTP(vault, name, key, digits)
 }
 
 // addWithURL creates a new TOTP using the values passed in the url.
-func addWithURL(db *bolt.DB, r io.Reader) error {
+func addWithURL(vault *bolt.DB, r io.Reader) error {
 	uri := terminal.ScanOneLine(bufio.NewReader(r), "URL")
 	URL, err := url.Parse(uri)
 	if err != nil {
@@ -110,7 +110,7 @@ func addWithURL(db *bolt.DB, r io.Reader) error {
 	}
 
 	name := getName(URL.Path)
-	if err := cmdutil.Exists(db, name, cmdutil.TOTP); err != nil {
+	if err := command_helper.Exists(vault, name, command_helper.TOTP); err != nil {
 		return err
 	}
 
@@ -120,17 +120,17 @@ func addWithURL(db *bolt.DB, r io.Reader) error {
 		return errors.Wrap(err, "invalid secret")
 	}
 
-	return createTOTP(db, name, secret, digits)
+	return createTOTP(vault, name, secret, digits)
 }
 
-func createTOTP(db *bolt.DB, name, key string, digits int32) error {
-	t := &pb.TOTP{
+func createTOTP(vault *bolt.DB, name, key string, digits int32) error {
+	t := &protobuf.TOTP{
 		Name:   name,
 		Raw:    key,
 		Digits: digits,
 	}
 
-	if err := totp.Create(db, t); err != nil {
+	if err := totp.Create(vault, t); err != nil {
 		return err
 	}
 
@@ -143,7 +143,7 @@ func getName(path string) string {
 	// Given "/Example:account@mail.com", return "Example"
 	path = strings.TrimPrefix(path, "/")
 	name, _, _ := strings.Cut(path, ":")
-	return cmdutil.NormalizeName(name)
+	return command_helper.NormalizeName(name)
 }
 
 // stringDigits returns the digits to use depending on the string passed.

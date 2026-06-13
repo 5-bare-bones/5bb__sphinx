@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"time"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/config"
 	"github.com/5-bare-bones/5bb__sphinx/sig"
 	"github.com/pkg/errors"
@@ -59,7 +59,7 @@ Session commands:
 	return cmd
 }
 
-func runSession(r io.Reader, opts *sessionOptions) cmdutil.RunErrorFunction {
+func runSession(r io.Reader, opts *sessionOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, _ []string) error {
 		// Use config values if they are set and the flag wasn't used
 		if p := "session.prefix"; config.IsSet(p) && !cmd.Flags().Changed("prefix") {

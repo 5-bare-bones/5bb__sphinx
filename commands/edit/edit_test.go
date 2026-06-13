@@ -6,18 +6,18 @@ import (
 	"strconv"
 	"testing"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 	"github.com/5-bare-bones/5bb__sphinx/config"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
+	"github.com/5-bare-bones/5bb__sphinx/protobuf"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
 
 	"github.com/stretchr/testify/assert"
 	bolt "go.etcd.io/bbolt"
 )
 
 func TestEditErrors(t *testing.T) {
-	db := cmdutil.SetContext(t)
-	createEntry(t, db, "test")
+	vault := command_helper.SetContext(t)
+	createEntry(t, vault, "test")
 
 	cases := []struct {
 		set  func()
@@ -44,7 +44,7 @@ func TestEditErrors(t *testing.T) {
 			if tc.set != nil {
 				tc.set()
 			}
-			cmd := NewCmd(db)
+			cmd := NewCmd(vault)
 			cmd.SetArgs([]string{tc.name})
 			f := cmd.Flags()
 			f.Set("it", strconv.FormatBool(tc.it))
@@ -56,7 +56,7 @@ func TestEditErrors(t *testing.T) {
 }
 
 func TestCreateTempFile(t *testing.T) {
-	e := &pb.Entry{
+	e := &protobuf.Entry{
 		Name:    "test-create-file",
 		Expires: "Never",
 	}
@@ -68,7 +68,7 @@ func TestCreateTempFile(t *testing.T) {
 	content, err := os.ReadFile(filename)
 	assert.NoError(t, err, "Failed reading the file")
 
-	var got pb.Entry
+	var got protobuf.Entry
 	err = json.Unmarshal(content, &got)
 	assert.NoError(t, err, "Failed reading the file")
 
@@ -111,12 +111,12 @@ func TestReadTmpFile(t *testing.T) {
 }
 
 func TestUpdateEntry(t *testing.T) {
-	db := cmdutil.SetContext(t)
+	vault := command_helper.SetContext(t)
 	name := "test_update"
-	createEntry(t, db, name)
+	createEntry(t, vault, name)
 
 	newName := "new_name"
-	newEntry := &pb.Entry{
+	newEntry := &protobuf.Entry{
 		Name:     newName,
 		Username: "test",
 		Password: "q8rvq63r/q",
@@ -125,17 +125,17 @@ func TestUpdateEntry(t *testing.T) {
 		Notes:    "",
 	}
 
-	err := updateEntry(db, name, newEntry)
+	err := updateEntry(vault, name, newEntry)
 	assert.NoError(t, err)
 
-	e, err := entry.Get(db, newName)
+	e, err := entry.Get(vault, newName)
 	assert.NoError(t, err)
 
 	assert.NotEqual(t, newEntry, e)
 
 	t.Run("Invalid name", func(t *testing.T) {
 		newEntry.Name = ""
-		err := updateEntry(db, "fail", newEntry)
+		err := updateEntry(vault, "fail", newEntry)
 		assert.Error(t, err)
 	})
 }
@@ -144,13 +144,13 @@ func TestPostRun(t *testing.T) {
 	NewCmd(nil).PostRun(nil, nil)
 }
 
-func createEntry(t *testing.T, db *bolt.DB, name string) {
+func createEntry(t *testing.T, vault *bolt.DB, name string) {
 	t.Helper()
-	e := &pb.Entry{
+	e := &protobuf.Entry{
 		Name:    name,
 		Expires: "Never",
 	}
 
-	err := entry.Create(db, e)
+	err := entry.Create(vault, e)
 	assert.NoError(t, err)
 }

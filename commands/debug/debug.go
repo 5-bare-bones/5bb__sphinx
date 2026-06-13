@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"io"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/card"
-	"github.com/5-bare-bones/5bb__sphinx/db/entry"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
-	"github.com/5-bare-bones/5bb__sphinx/db/totp"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/vault/card"
+	"github.com/5-bare-bones/5bb__sphinx/vault/entry"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
+	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -19,24 +19,24 @@ import (
 )
 
 // NewCmd returns the debug command.
-func NewCmd(db *bolt.DB) *cobra.Command {
+func NewCmd(vault *bolt.DB) *cobra.Command {
 	return &cobra.Command{
 		Use:   "debug",
 		Short: "Inspect raw buckets and decrypt-dump your own vault (dev only)",
 		Example: `
 sphinx debug`,
-		RunE: runDebug(db),
+		RunE: runDebug(vault),
 	}
 }
 
-func runDebug(db *bolt.DB) cmdutil.RunErrorFunction {
+func runDebug(vault *bolt.DB) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		out := cmd.OutOrStdout()
 
-		if err := dumpBuckets(out, db); err != nil {
+		if err := dumpBuckets(out, vault); err != nil {
 			return err
 		}
-		return dumpRecords(out, db)
+		return dumpRecords(out, vault)
 	}
 }
 
@@ -53,8 +53,8 @@ func dumpBuckets(out io.Writer, db *bolt.DB) error {
 
 // dumpRecords decrypts and prints every record. This deliberately exposes
 // secrets in plaintext — that is the whole point of a hero-tier debug dump.
-func dumpRecords(out io.Writer, db *bolt.DB) error {
-	entries, err := entry.List(db)
+func dumpRecords(out io.Writer, vault *bolt.DB) error {
+	entries, err := entry.List(vault)
 	if err != nil {
 		return errors.Wrap(err, "listing entries")
 	}
@@ -63,7 +63,7 @@ func dumpRecords(out io.Writer, db *bolt.DB) error {
 		fmt.Fprintf(out, "  %s  user=%q pass=%q url=%q\n", e.Name, e.Username, e.Password, e.URL)
 	}
 
-	cards, err := card.List(db)
+	cards, err := card.List(vault)
 	if err != nil {
 		return errors.Wrap(err, "listing cards")
 	}
@@ -72,7 +72,7 @@ func dumpRecords(out io.Writer, db *bolt.DB) error {
 		fmt.Fprintf(out, "  %s  number=%q cvc=%q exp=%q\n", c.Name, c.Number, c.SecurityCode, c.ExpireDate)
 	}
 
-	totps, err := totp.List(db)
+	totps, err := totp.List(vault)
 	if err != nil {
 		return errors.Wrap(err, "listing totp")
 	}
@@ -81,7 +81,7 @@ func dumpRecords(out io.Writer, db *bolt.DB) error {
 		fmt.Fprintf(out, "  %s  raw=%q digits=%d\n", t.Name, t.Raw, t.Digits)
 	}
 
-	names, err := file.ListNames(db)
+	names, err := file.ListNames(vault)
 	if err != nil {
 		return errors.Wrap(err, "listing files")
 	}

@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
 
 	"github.com/atotto/clipboard"
 	"github.com/pkg/errors"
@@ -57,7 +57,7 @@ Using the command without passing any flags clears the clipboard and the termina
 	return cmd
 }
 
-func runClear(opts *clearOptions) cmdutil.RunErrorFunction {
+func runClear(opts *clearOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		// If no flags were specified, clear clipboard and terminal
 		if !opts.clip && !opts.term && !opts.hist {

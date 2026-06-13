@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"io"
 
-	cmdutil "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/db/file"
+	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
+	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
 	"github.com/atotto/clipboard"
 	"github.com/pkg/errors"
@@ -28,15 +28,15 @@ type catOptions struct {
 }
 
 // NewCmd returns a new command.
-func NewCmd(db *bolt.DB, w io.Writer) *cobra.Command {
+func NewCmd(vault *bolt.DB, w io.Writer) *cobra.Command {
 	opts := catOptions{}
 	cmd := &cobra.Command{
 		Use:     "show <name>",
 		Short:   "Read file and write to standard output",
 		Aliases: []string{"cat"},
 		Example: example,
-		Args:    cmdutil.MustExist(db, cmdutil.File),
-		RunE:    runCat(db, w, &opts),
+		Args:    command_helper.MustExist(vault, command_helper.File),
+		RunE:    runCat(vault, w, &opts),
 		PostRun: func(cmd *cobra.Command, args []string) {
 			// Reset variables (session)
 			opts = catOptions{}
@@ -48,15 +48,15 @@ func NewCmd(db *bolt.DB, w io.Writer) *cobra.Command {
 	return cmd
 }
 
-func runCat(db *bolt.DB, w io.Writer, opts *catOptions) cmdutil.RunErrorFunction {
+func runCat(vault *bolt.DB, w io.Writer, opts *catOptions) command_helper.RunErrorFunction {
 	return func(cmd *cobra.Command, args []string) error {
 		for i, name := range args {
 			if name == "" {
 				return errors.Errorf("name [%d] is invalid", i)
 			}
 
-			name = cmdutil.NormalizeName(name)
-			f, err := file.Get(db, name)
+			name = command_helper.NormalizeName(name)
+			f, err := file.Get(vault, name)
 			if err != nil {
 				return err
 			}
