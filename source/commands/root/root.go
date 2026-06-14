@@ -44,6 +44,7 @@ func NewCmd(vault *bolt.DB) *cobra.Command {
 		},
 		RunE: runRoot(&opts),
 	}
+	applyHelpTheme(cmd)
 
 	cmd.Flags().BoolVarP(&opts.version, "version", "v", false, "display sphinx version")
 
@@ -74,6 +75,14 @@ func NewCmd(vault *bolt.DB) *cobra.Command {
 			applyIdentity(child, e)
 			parent.AddCommand(child)
 		}
+	}
+
+	// Hide the auto-generated `help` command so it doesn't duplicate the
+	// `-h/--help` flag in the command listing, mirroring how the `completion`
+	// command is hidden above. The flag still provides per-command help.
+	cmd.InitDefaultHelpCmd()
+	if hc, _, err := cmd.Find([]string{"help"}); err == nil {
+		hc.Hidden = true
 	}
 
 	return cmd
