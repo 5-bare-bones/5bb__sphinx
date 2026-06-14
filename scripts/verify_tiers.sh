@@ -13,7 +13,7 @@ cd "$(dirname "$0")/.."
 out="$(mktemp -d)"
 trap 'del -rf "$out"' EXIT
 
-tiers=(apprentice adept scholar keeper master)
+tiers=(apprentice adept scholar keeper master hero tutor)
 
 # Cumulative build tags for a tier (kept bash 3.2 compatible — macOS ships it).
 tags_for() {
@@ -23,6 +23,8 @@ tags_for() {
 		scholar)    echo "adept scholar" ;;
 		keeper)     echo "adept scholar keeper" ;;
 		master)     echo "adept scholar keeper master" ;;
+		hero)       echo "adept scholar keeper master hero" ;;
+		tutor)      echo "adept scholar keeper master hero tutor" ;;
 	esac
 }
 

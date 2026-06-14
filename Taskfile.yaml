@@ -8,7 +8,7 @@ vars:
   BINARY: sphinx
   VERSION: 2026.1.1
   PROJECT_NAME: Grimm/Sphinx
-  SOURCE_DIR: .
+  SOURCE_DIR: source
   # Package whose vars are stamped into the binary via -ldflags -X.
   BUILD_INFO: github.com/5-bare-bones/5bb__sphinx/internal/BUILD_INFO
   # Cumulative build tags per tier (tier 6/7 layer onto the master base).
@@ -65,7 +65,7 @@ tasks:
 
   run:
     desc: "Run without building — usage: task run -- generate --length 16"
-    dir: ./{{.SOURCE_DIR}}
+    dir: .
     cmds:
       - go run . {{.CLI_ARGS}}
 
@@ -75,12 +75,13 @@ tasks:
     internal: true
     cmds:
       - >-
+        cd {{.SOURCE_DIR}} &&
         go build -tags '{{.TAGS}}'
         -ldflags "-s -w
         -X {{.BUILD_INFO}}.Version={{.VERSION}}
         -X {{.BUILD_INFO}}.Tier={{.STAMP}}
         -X {{.BUILD_INFO}}.PubKeyB64=$SPHINX_PUBKEY"
-        -o bin/sphinx_{{.NAME}} .
+        -o ../bin/sphinx_{{.NAME}} .
 
   build:apprentice:
     aliases: [build:level1]
@@ -246,6 +247,13 @@ tasks:
     cmds:
       - for: [card, entry, file, totp]
         cmd: protoc -I. --go_out=. {{.ITEM}}.proto
+
+    docs:
+      desc: Regenerate command docs
+      dir: docs
+      cmds:
+        - go build main.go
+        - ./main --cmd all
 
   docs:commands:
     desc: Regenerate command docs

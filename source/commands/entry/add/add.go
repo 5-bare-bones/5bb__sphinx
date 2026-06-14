@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/commands/add/phrase"
+	"github.com/5-bare-bones/5bb__sphinx/commands/entry/add/phrase"
 	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
 	"github.com/5-bare-bones/5bb__sphinx/vault/entry"

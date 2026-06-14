@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	command_helper "github.com/5-bare-bones/5bb__sphinx/commands"
-	"github.com/5-bare-bones/5bb__sphinx/commands/generate/phrase"
+	"github.com/5-bare-bones/5bb__sphinx/commands/entry/generate/phrase"
 	"github.com/5-bare-bones/5bb__sphinx/terminal"
 
 	"github.com/GGP1/atoll"
