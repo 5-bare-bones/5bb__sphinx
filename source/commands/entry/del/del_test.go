@@ -104,7 +104,7 @@ func TestDeleteErrors(t *testing.T) {
 	}
 }
 
-func createEntries(t *testing.T, db *bolt.DB, names ...string) {
+func createEntries(t *testing.T, vault *bolt.DB, names ...string) {
 	t.Helper()
 
 	for _, n := range names {

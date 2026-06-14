@@ -6,7 +6,6 @@ import (
 
 	"github.com/5-bare-bones/5bb__sphinx/config"
 	"github.com/5-bare-bones/5bb__sphinx/crypt"
-	"github.com/5-bare-bones/5bb__sphinx/pb"
 	"github.com/5-bare-bones/5bb__sphinx/protobuf"
 	vault_helper "github.com/5-bare-bones/5bb__sphinx/vault"
 	"github.com/5-bare-bones/5bb__sphinx/vault/bucket"
@@ -135,7 +134,7 @@ func TestCryptErrors(t *testing.T) {
 func TestProtoErrors(t *testing.T) {
 	vault := setContext(t)
 
-	err := db.Update(func(tx *bolt.Tx) error {
+	err := vault.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucket.TOTP.GetName())
 		buf := make([]byte, 64)
 		rand.Read(buf)
