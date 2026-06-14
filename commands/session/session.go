@@ -18,10 +18,10 @@ import (
 
 const example = `
 * Run a session without timeout and using "$" as the prefix
-sphinx session -p $
+sphinx session --prefix $
 
 * Run a session for 1 hour
-sphinx session -t 1h`
+sphinx session --timeout 1h`
 
 type sessionOptions struct {
 	prefix  string

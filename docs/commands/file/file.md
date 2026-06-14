@@ -1,6 +1,7 @@
 ## Use
 
-`sphinx file <subcommand>`
+`sphinx file {subcommand}`
+
 
 ## Description
 

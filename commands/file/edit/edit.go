@@ -24,7 +24,7 @@ const example = `
 sphinx file edit Sample --editor micro
 
 * Write a file's content to a temporary file and log its path
-sphinx file edit Sample -l`
+sphinx file edit Sample --log`
 
 type editOptions struct {
 	editor string

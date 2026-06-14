@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx file touch <name> [-o overwrite] [-p path]`
+`sphinx file touch {name} [-o overwrite] [-p path]`
 
 *Aliases*: th.
 

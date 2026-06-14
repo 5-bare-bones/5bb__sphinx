@@ -41,7 +41,7 @@ func NewCmd() *cobra.Command {
 		Short: "Seal and solve knowledge-derived-key riddles (tutor only)",
 		Example: `
 * Seal a secret behind an answer
-sphinx riddle seal --prompt "I speak without a mouth" --answer "an echo" --secret <token> -o echo.riddle
+sphinx riddle seal --prompt "I speak without a mouth" --answer "an echo" --secret <token> --out echo.riddle
 
 * Solve it
 sphinx riddle solve echo.riddle`,

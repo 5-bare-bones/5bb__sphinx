@@ -1,31 +1,41 @@
 ## Use
 
-`sphinx file list <name> [-f filter]`
+`sphinx list {name} [-f filter] [-q qr] [-s show]`
+
+*Aliases*: entries, list.
 
 ## Description
 
 List entries.
-TODO: change docs to fit entry
 
-## Flags
+> Listing all the entries does not check for expired entries, this decision was taken to prevent high loads when the number of entries is elevated. Listing a single entry does notifies if it is expired.
 
-|  Name     | Shorthand |     Type      |    Default    |      Description      |
-|-----------|-----------|---------------|---------------|-----------------------|
-| filter    | f         | bool          | false         | Filter files by name  |
+## Flags 
 
-### Example
+|  Name     | Shorthand |     Type      |    Default    |                                  Description                                         	|
+|-----------|-----------|---------------|---------------|---------------------------------------------------------------------------------------|
+| filter    | f         | bool          | false         | Filter entries                                                                       	|
+| qr        | q         | bool          | false         | Display the password QR code on the terminal (not-available when listing all entries)	|
+| show      | s         | bool          | false         | Show entry password                                                                  	|
 
-List trip.txt file and copy its content to the clipboard:
+### Examples
+
+List an entry:
 ```
-sphinx file list trip.txt
-```
-
-Filter among files:
-```
-sphinx file list book -f
+sphinx list Sample
 ```
 
-List all the files:
+List one and show sensitive information:
 ```
-sphinx file list
+sphinx list Sample -s
+```
+
+Filter:
+```
+sphinx list Sample -f
+```
+
+List all entries:
+```
+sphinx list
 ```

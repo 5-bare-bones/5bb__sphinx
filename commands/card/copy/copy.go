@@ -16,10 +16,10 @@ const example = `
 sphinx card copy Sample
 
 * Copy the security code
-sphinx card copy Sample -c
+sphinx card copy Sample --cvc
 
 * Copy and clean after 30s
-sphinx card copy Sample -t 30s`
+sphinx card copy Sample --timeout 30s`
 
 type copyOptions struct {
 	cvc     bool

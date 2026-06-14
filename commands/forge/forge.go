@@ -19,7 +19,7 @@ import (
 
 const example = `
 * Mint every vault described in world.yaml into ./vaults
-sphinx forge world.yaml -o ./vaults`
+sphinx forge world.yaml --out ./vaults`
 
 // manifest is the on-disk world description.
 type manifest struct {

@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx file list <name> [-f filter]`
+`sphinx file list {name} [-f filter]`
 
 ## Description
 

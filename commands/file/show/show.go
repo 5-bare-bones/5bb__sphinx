@@ -15,13 +15,13 @@ import (
 
 const example = `
 * Write one file
-sphinx show Sample
+sphinx file show Sample
 
 * Write one file and copy content to the clipboard
-sphinx show Sample -c
+sphinx file show Sample --copy
 
 * Write multiple files
-sphinx show sample1 sample2 sample3`
+sphinx file show sample1 sample2 sample3`
 
 type catOptions struct {
 	copy bool

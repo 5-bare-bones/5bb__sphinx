@@ -25,7 +25,7 @@ const example = `
 sphinx card edit Sample
 
 * Edit using the text editor
-sphinx card edit Sample -i`
+sphinx card edit Sample --it`
 
 type editOptions struct {
 	interactive bool

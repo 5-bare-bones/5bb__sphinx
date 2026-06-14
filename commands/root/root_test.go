@@ -46,6 +46,8 @@ func TestRunnable(t *testing.T) {
 	exceptions := map[string]struct{}{
 		"card":       {},
 		"file":       {},
+		"entry":      {}, // group command (add/copy/edit/list/del/rotate)
+		"vault":      {}, // group command (import/export/backup/stats/restore)
 		"riddle":     {}, // group command (seal/solve), like card/file
 		"completion": {},
 	}
@@ -78,7 +80,7 @@ func TestIsStatelessCommand(t *testing.T) {
 			expected:    false,
 		},
 		{
-			commandName: "gen",
+			commandName: "generate",
 			expected:    true,
 		},
 		{

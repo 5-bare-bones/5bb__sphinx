@@ -9,6 +9,7 @@ import (
 	_ "github.com/5-bare-bones/5bb__sphinx/commands/file/del"
 	_ "github.com/5-bare-bones/5bb__sphinx/commands/file/move"
 	_ "github.com/5-bare-bones/5bb__sphinx/commands/rotate"
-	_ "github.com/5-bare-bones/5bb__sphinx/commands/stats"
 	_ "github.com/5-bare-bones/5bb__sphinx/commands/topt"
+	_ "github.com/5-bare-bones/5bb__sphinx/commands/vault"
+	_ "github.com/5-bare-bones/5bb__sphinx/commands/vault/stats"
 )

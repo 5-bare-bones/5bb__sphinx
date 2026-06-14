@@ -1,9 +1,9 @@
 @keeper
 Feature: Keeper tier
-  Persistent state and stewardship: backup and session.
+  Persistent state and stewardship: vault backup and session.
 
-  Scenario: backup help
-    When I run sphinx "backup --help"
+  Scenario: vault backup help
+    When I run sphinx "vault backup --help"
     Then the exit code is 0
     And stdout contains "backup"
 

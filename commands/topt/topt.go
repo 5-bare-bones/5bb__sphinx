@@ -28,13 +28,13 @@ import (
 
 const example = `
 * List one and copy to the clipboard
-sphinx topt Sample -c
+sphinx topt Sample --copy
 
 * List all
 sphinx topt
 
 * Display information about the setup key
-sphinx topt Sample -i`
+sphinx topt Sample --info`
 
 type toptOptions struct {
 	copy, info bool

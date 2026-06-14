@@ -12,7 +12,7 @@ import (
 )
 
 const example = `
-sphinx config create -p path/to/file`
+sphinx config create --path path/to/file`
 
 type createOptions struct {
 	path string

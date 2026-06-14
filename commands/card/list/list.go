@@ -19,10 +19,10 @@ import (
 
 const example = `
 * List one, show sensitive information and QR code
-sphinx card list Sample -s -q
+sphinx card list Sample --show --qr
 
 * Filter by name
-sphinx card  Sample -f
+sphinx card list Sample --filter
 
 * List all
 sphinx card list`

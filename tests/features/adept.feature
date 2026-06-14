@@ -1,19 +1,19 @@
 @adept
 Feature: Adept tier
-  Modifying entries and the file object: copy, edit, del, file.
+  Entry modification (copy, edit, del) and the file object.
 
-  Scenario: copy help
-    When I run sphinx "copy --help"
+  Scenario: entry copy help
+    When I run sphinx "entry copy --help"
     Then the exit code is 0
     And stdout contains "Copy entry credentials"
 
-  Scenario: edit help
-    When I run sphinx "edit --help"
+  Scenario: entry edit help
+    When I run sphinx "entry edit --help"
     Then the exit code is 0
     And stdout contains "Edit an entry"
 
-  Scenario: del help
-    When I run sphinx "del --help"
+  Scenario: entry del help
+    When I run sphinx "entry del --help"
     Then the exit code is 0
     And stdout contains "Remove entries"
 

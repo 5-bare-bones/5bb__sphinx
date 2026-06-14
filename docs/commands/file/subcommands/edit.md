@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx file edit <name>  [-e editor] [-l log]`
+`sphinx file edit {name}  [-e editor] [-l log]`
 
 ## Description
 

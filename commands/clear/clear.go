@@ -20,10 +20,10 @@ const example = `
 sphinx clear
 
 * Clear clipboard
-sphinx clear -c
+sphinx clear --clipboard
 
 * Clear terminal screen
-sphinx clear -t
+sphinx clear --terminal
 
 * Clear sphinx commands from terminal history
 sphinx clear -H`

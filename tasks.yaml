@@ -1,4 +1,6 @@
 tasks:
+  - name: evaluate if `it` should be `prompt`
+    state: pending
   - name: fully replace `keru` with `sphinx`
     state: testing
   - name: use Gherkin / behave tests

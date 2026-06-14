@@ -1,6 +1,6 @@
 @scholar
 Feature: Scholar tier
-  The full object model: topt (formerly 2fa), card, rotate, stats, and the
+  topt (formerly 2fa), card, entry rotate, the vault group (stats), and the
   destructive file subcommands move/del.
 
   Scenario: topt help
@@ -18,13 +18,19 @@ Feature: Scholar tier
     Then the exit code is 0
     And stdout contains "Card operations"
 
-  Scenario: rotate help
-    When I run sphinx "rotate --help"
+  Scenario: entry rotate help
+    When I run sphinx "entry rotate --help"
     Then the exit code is 0
     And stdout contains "Rotate an entry"
 
-  Scenario: stats help
-    When I run sphinx "stats --help"
+  Scenario: vault group help lists the scholar subcommand
+    When I run sphinx "vault --help"
+    Then the exit code is 0
+    And stdout contains "Vault administration"
+    And stdout contains "Show vault statistics"
+
+  Scenario: vault stats help
+    When I run sphinx "vault stats --help"
     Then the exit code is 0
     And stdout contains "vault statistics"
 

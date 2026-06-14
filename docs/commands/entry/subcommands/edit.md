@@ -1,17 +1,25 @@
 ## Use
 
-`sphinx file edit <name>  [-e editor] [-l log]`
+`sphinx edit {name} [-i it]`
 
 ## Description
 
-Edit a entry.
+Edit an entry. 
 
-TODO: change docs to fit entry
+If the name is edited, sphinx will remove the entry with the old name and create one with the new name.
 
-Caution: a temporary file is created with a random name, it will be erased right after the first save but it could still be read by a malicious actor.
-Notes:
-    - Some editors flush the changes to the disk when closed, sphinx won't notice any modifications until then.
-    - Modifying the file with a different program will prevent sphinx from erasing the file as its being blocked by another process.
+**Caution**: when using a text editor the content of the entry is written in plaintext to a temporary file, although the file has a random name and it's erased right after the first save, this isn't secure enough.
+
+Command procedure when using a text editor:
+1. Create a temporary file and write the entry content encoded with JSON to it.
+2. Execute the text editor to edit it.
+3. Wait for it to be saved.
+4. Read its content and update the entry.
+5. Overwrite the file with random bytes and delete.
+
+Tips:
+- Use '\n' to add new lines.
+- Some text editors will require to exit to modify the file.
 
 #### Text editors commands
 *Editor*: *command*
@@ -30,30 +38,20 @@ Notepad++: notepad++
 ...
 ```
 
-#### Image editors commands
-*Editor*: *command*
-```
-GIMP: gimp
-Paint: mspaint
-Krita: krita
-...
-```
-
 ## Flags
 
-|  Name     | Shorthand |     Type      |    Default    |      Description     |
+|  Name     | Shorthand |     Type      |    Default    |     Description      |
 |-----------|-----------|---------------|---------------|----------------------|
-| editor    | e         | string        | ""            | File editor command  |
-| log | l | bool | false | Log the temporary file path and wait for modifications |
+| it        | i         | bool          | false         | Use a text editor    |
 
 ### Examples
 
-Edit a file:
+Edit entry using the standard input:
 ```
-sphinx file edit Sample -e nvim
+sphinx edit Sample 
 ```
 
-Write a file's content to a temporary file and log its path:
+Edit entry using a text editor:
 ```
-sphinx file edit Sample -l
+sphinx edit Sample -i
 ```

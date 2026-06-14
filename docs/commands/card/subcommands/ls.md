@@ -1,6 +1,6 @@
 ## Use 
 
-`sphinx card list <name> [-f filter] [-q qr] [-s show]`
+`sphinx card list {name} [-f filter] [-q qr] [-s show]`
 
 ## Description
 

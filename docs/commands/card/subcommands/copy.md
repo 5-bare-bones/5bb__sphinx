@@ -1,6 +1,6 @@
 ## Use 
 
-`sphinx card copy <name> [-c cvc] [-t timeout]`
+`sphinx card copy {name} [--cvc] [--timeout {}]`
 
 *Aliases*: cp.
 

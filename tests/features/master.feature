@@ -1,23 +1,23 @@
 @master
 Feature: Master tier
-  Vault administration: config, export, import, restore.
+  Vault administration: config plus the vault import/export/restore subcommands.
 
   Scenario: config help
     When I run sphinx "config --help"
     Then the exit code is 0
     And stdout contains "configuration file"
 
-  Scenario: export help
-    When I run sphinx "export --help"
-    Then the exit code is 0
-    And stdout contains "Export entries"
-
-  Scenario: import help
-    When I run sphinx "import --help"
+  Scenario: vault import help
+    When I run sphinx "vault import --help"
     Then the exit code is 0
     And stdout contains "Import entries"
 
-  Scenario: restore help
-    When I run sphinx "restore --help"
+  Scenario: vault export help
+    When I run sphinx "vault export --help"
+    Then the exit code is 0
+    And stdout contains "Export entries"
+
+  Scenario: vault restore help
+    When I run sphinx "vault restore --help"
     Then the exit code is 0
     And stdout contains "Restore the vault"

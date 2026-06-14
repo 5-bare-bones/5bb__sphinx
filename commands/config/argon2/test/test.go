@@ -16,7 +16,7 @@ import (
 )
 
 const example = `
-sphinx config argon2 test -m 500000 -i 2 -t 4`
+sphinx config argon2 test --memory 500000 --iterations 2 --threads 4`
 
 type testOptions struct {
 	memory, iterations uint32

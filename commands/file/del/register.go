@@ -8,9 +8,10 @@ import (
 
 func init() {
 	registry.Register(registry.Entry{
-		Verb:   "del",
-		Parent: "file",
-		Level:  registry.TierScholar,
+		Verb:    "del",
+		Aliases: []string{"delete", "rm"},
+		Parent:  "file",
+		Level:   registry.TierScholar,
 		New: func(c registry.BuildContext) *cobra.Command {
 			return NewCmd(c.Vault, c.In)
 		},

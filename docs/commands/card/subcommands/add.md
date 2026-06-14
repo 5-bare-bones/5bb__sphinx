@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx card add <name>`
+`sphinx card add {name}`
 
 *Aliases*: create, new.
 

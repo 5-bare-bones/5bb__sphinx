@@ -5,25 +5,27 @@ Feature: Tier gating
 
   This feature must be run against the apprentice (default) binary.
 
-  Scenario Outline: "<command>" is unavailable at the apprentice tier
+  Scenario Outline: top-level "<command>" is unavailable at the apprentice tier
     When I run sphinx "<command>"
     Then the exit code is not 0
     And stderr contains "unknown command"
 
     Examples:
       | command |
-      | copy    |
-      | edit    |
+      | file    |
       | card    |
       | topt    |
-      | rotate  |
-      | stats   |
-      | backup  |
+      | vault   |
       | session |
       | config  |
-      | export  |
-      | import  |
-      | restore |
       | debug   |
       | forge   |
       | riddle  |
+
+  Scenario: higher-tier entry verbs are absent from the apprentice entry group
+    When I run sphinx "entry --help"
+    Then the exit code is 0
+    And stdout contains "Add an entry"
+    And stdout does not contain "Copy entry credentials"
+    And stdout does not contain "Edit an entry"
+    And stdout does not contain "Rotate an entry"

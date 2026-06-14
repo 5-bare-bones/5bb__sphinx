@@ -22,16 +22,16 @@ import (
 
 const example = `
 * Add a new file
-sphinx file add Sample -p path/to/file
+sphinx file add Sample --path path/to/file
 
 * Add a note
-sphinx file add Sample -n
+sphinx file add Sample --note
 
 * Add a folder and all its subfolders, limiting goroutine number to 40
-sphinx file add Sample -p path/to/folder -s 40
+sphinx file add Sample --path path/to/folder --semaphore 40
 
 * Add files from a folder, ignoring subfolders
-sphinx file add Sample -p path/to/folder -i`
+sphinx file add Sample --path path/to/folder --ignore`
 
 type addOptions struct {
 	path      string
@@ -50,7 +50,7 @@ func NewCmd(vault *bolt.DB, r io.Reader) *cobra.Command {
 
 Path to a file must include its extension (in case it has one).
 
-The user can specify a path to a folder as well, on this occasion, sphinx will iterate over all the files in the folder and potential subfolders (if the -i flag is false) and store them into the vault with the name "name/subfolders/filename". Empty folders will be skipped.`,
+The user can specify a path to a folder as well, on this occasion, sphinx will iterate over all the files in the folder and potential subfolders (if the --ignore flag is false) and store them into the vault with the name "name/subfolders/filename". Empty folders will be skipped.`,
 		Aliases: []string{"new"},
 		Example: example,
 		Args:    command_helper.MustNotExist(vault, command_helper.File),

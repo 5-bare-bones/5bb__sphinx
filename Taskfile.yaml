@@ -64,7 +64,7 @@ tasks:
       - go install -ldflags="-s -w" .
 
   run:
-    desc: "Run without building — usage: task run -- gen -l 16"
+    desc: "Run without building — usage: task run -- generate --length 16"
     dir: ./{{.SOURCE_DIR}}
     cmds:
       - go run . {{.CLI_ARGS}}
@@ -202,7 +202,7 @@ tasks:
     cmds: [{ task: "_test:behave", vars: { NAME: master, TAGS: "@apprentice,@adept,@scholar,@keeper,@master" } }]
   test:behave:hero:
     desc: Run hero/dev-tier (cumulative) features against the dev binary
-    deps: [build:dev]
+    deps: [build:hero]
     cmds: [{ task: "_test:behave", vars: { NAME: dev, TAGS: "@apprentice,@adept,@scholar,@keeper,@master,@hero" } }]
   test:behave:tutor:
     desc: Run tutor-tier features against the tutor binary
@@ -247,7 +247,7 @@ tasks:
       - for: [card, entry, file, totp]
         cmd: protoc -I. --go_out=. {{.ITEM}}.proto
 
-  docs:cmds:
+  docs:commands:
     desc: Regenerate command docs
     dir: docs
     cmds:

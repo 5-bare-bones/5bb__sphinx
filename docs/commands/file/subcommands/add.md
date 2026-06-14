@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx file add <name> [-i ignore] [-n note] [-p path] [-s semaphore]`
+`sphinx file add {name} [-i ignore] [-n note] [-p path] [-s semaphore]`
 
 *Aliases*: new.
 

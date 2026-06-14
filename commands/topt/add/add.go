@@ -23,7 +23,7 @@ const example = `
 sphinx topt add Sample
 
 * Add with URL
-sphinx topt add -u`
+sphinx topt add --url`
 
 type addOptions struct {
 	digits int32

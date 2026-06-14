@@ -1,15 +1,14 @@
 @apprentice
 Feature: Apprentice tier (default build)
-  The commands every sphinx binary ships with: add, list, generate, clear and the
-  interactive walker. Available in every tier.
+  Every sphinx binary ships with the entry group (add, list), generate, clear
+  and the interactive walker.
 
   Scenario: Root help shows usage and the apprentice commands
     When I run sphinx "--help"
     Then the exit code is 0
     And stdout contains "Usage:"
     And stdout contains "Available Commands:"
-    And stdout contains "Add an entry"
-    And stdout contains "List entries"
+    And stdout contains "Entry operations"
     And stdout contains "Generate a random password"
     And stdout contains "Clear clipboard"
 
@@ -23,13 +22,20 @@ Feature: Apprentice tier (default build)
     Then the exit code is 0
     And stdout contains "tier:"
 
-  Scenario: add help
-    When I run sphinx "add --help"
+  Scenario: entry group help lists the apprentice subcommands
+    When I run sphinx "entry --help"
+    Then the exit code is 0
+    And stdout contains "Entry operations"
+    And stdout contains "Add an entry"
+    And stdout contains "List entries"
+
+  Scenario: entry add help
+    When I run sphinx "entry add --help"
     Then the exit code is 0
     And stdout contains "Add an entry"
 
-  Scenario: list help
-    When I run sphinx "list --help"
+  Scenario: entry list help
+    When I run sphinx "entry list --help"
     Then the exit code is 0
     And stdout contains "List entries"
 

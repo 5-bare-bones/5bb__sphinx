@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx card edit <name> [-i it]`
+`sphinx card edit {name} [-i it]`
 
 ## Description
 
@@ -42,7 +42,7 @@ Notepad++: notepad++
 
 |  Name     | Shorthand |     Type      |    Default    |     Description    |
 |-----------|-----------|---------------|---------------|--------------------|
-| it        | i         | bool          | false         | Use text editor    |
+| `--it`    | `-i`      | bool          | false         | Use text editor    |
 
 ### Examples
 
@@ -53,5 +53,5 @@ sphinx card edit Sample
 
 Edit card with text editor:
 ```
-sphinx card edit Sample -i
+sphinx card edit Sample --it
 ```

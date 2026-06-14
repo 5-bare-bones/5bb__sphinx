@@ -27,6 +27,7 @@ sphinx topt del Sample Sample2 Sample3`
 func NewCmd(vault *bolt.DB, r io.Reader) *cobra.Command {
 	return &cobra.Command{
 		Use:     "del <names>",
+		Aliases: []string{"delete", "rm"},
 		Short:   "Remove two-factor authentication codes or directories",
 		Example: example,
 		Args:    command_helper.MustExist(vault, command_helper.TOTP, true),

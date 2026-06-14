@@ -30,11 +30,8 @@ const (
 )
 
 const example = `
-* List a file and copy its content to the clipboard
-sphinx file list Sample -c
-
 * Filter files by name
-sphinx file list Sample -f
+sphinx file list Sample --filter
 
 * List all files
 sphinx file list`

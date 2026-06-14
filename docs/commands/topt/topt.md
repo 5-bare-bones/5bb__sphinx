@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx topt <name> [-c copy] [-i info] [-t timeout]`
+`sphinx topt {name} [-c copy] [-i info] [-t timeout]`
 
 ## Description
 

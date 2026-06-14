@@ -69,8 +69,8 @@ assert_absent  adept      commands/card
 assert_present scholar    commands/card
 assert_absent  keeper     commands/config
 assert_present master     commands/config
-assert_absent  apprentice commands/backup
-assert_present keeper     commands/backup
+assert_absent  apprentice commands/vault/backup
+assert_present keeper     commands/vault/backup
 echo "  ok"
 
 echo "== per-subcommand gating: file move only at scholar+ =="

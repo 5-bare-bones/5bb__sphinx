@@ -15,7 +15,7 @@ func newSealCmd() *cobra.Command {
 		Use:   "seal",
 		Short: "Seal a secret behind a riddle answer",
 		Example: `
-sphinx riddle seal --prompt "I speak without a mouth..." --answer "an echo" --secret <token> -o echo.riddle`,
+sphinx riddle seal --prompt "I speak without a mouth..." --answer "an echo" --secret <token> --out echo.riddle`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if prompt == "" || answer == "" || secret == "" {
 				return errors.New("--prompt, --answer and --secret are required")

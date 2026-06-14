@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx 2fa add <name> [-d digits] [-u url]`
+`sphinx 2fa add {name} [-d digits] [-u url]`
 
 ## Description
 

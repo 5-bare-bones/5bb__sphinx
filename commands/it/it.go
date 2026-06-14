@@ -17,7 +17,7 @@ sphinx it
 sphinx it list
 
 * Command with flags
-sphinx it list -s -q
+sphinx it entry list --show --qr
 
 * Only the name
 sphinx sample`

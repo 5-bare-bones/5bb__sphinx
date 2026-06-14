@@ -17,13 +17,13 @@ import (
 
 const example = `
 * Create a file and overwrite if it already exists
-sphinx file touch fileName -p path/to/folder -o
+sphinx file touch fileName --path path/to/folder --overwrite
 
 * Create multiple files in the current directory
 sphinx file touch file1 file2 file3
 
 * Create all the files (includes folders and subfolders)
-sphinx file touch -p path/to/folder`
+sphinx file touch --path path/to/folder`
 
 type touchOptions struct {
 	path      string
