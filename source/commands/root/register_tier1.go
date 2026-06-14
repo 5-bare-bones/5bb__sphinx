@@ -8,5 +8,5 @@ import (
 	_ "github.com/5-bare-bones/5bb__sphinx/commands/entry/add"
 	_ "github.com/5-bare-bones/5bb__sphinx/commands/entry/generate"
 	_ "github.com/5-bare-bones/5bb__sphinx/commands/entry/list"
-	_ "github.com/5-bare-bones/5bb__sphinx/commands/it"
+	_ "github.com/5-bare-bones/5bb__sphinx/commands/prompt"
 )

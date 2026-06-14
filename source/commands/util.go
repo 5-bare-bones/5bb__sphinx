@@ -337,7 +337,7 @@ func MustExistList(vault *bolt.DB, obj object) cobra.PositionalArgs {
 			return nil
 		}
 
-		// If an empty string is joined in session/it command
+		// If an empty string is joined in session/prompt command
 		// it returns a 1 item long slice [""]
 		if strings.Join(args, "") == "" {
 			return nil

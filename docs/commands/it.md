@@ -1,6 +1,6 @@
 ## Use
 
-`sphinx it <command|flags|name>`
+`sphinx prompt {command|flags|name}`
 
 ## Description
 
@@ -21,17 +21,17 @@ No flags.
 
 No arguments:
 ```
-sphinx it
+sphinx prompt
 ```
 
 Command without flags:
 ```
-sphinx it list
+sphinx prompt list
 ```
 
 Command with flags:
 ```
-sphinx it list -s -q
+sphinx prompt list -s -q
 ```
 
 Only the name:

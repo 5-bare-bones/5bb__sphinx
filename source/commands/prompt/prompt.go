@@ -1,4 +1,4 @@
-package it
+package prompt
 
 import (
 	"strings"
@@ -11,28 +11,31 @@ import (
 
 const example = `
 * No arguments
-sphinx it
+sphinx prompt
 
 * Command without flags
-sphinx it list
+sphinx prompt list
 
 * Command with flags
-sphinx it entry list --show --qr
+sphinx prompt entry list --show --qr
 
 * Only the name
 sphinx sample`
 
+const TierName = "axx" // TODO: make this level dependent on the config
+
 // NewCmd returns a new command.
 func NewCmd(vault *bolt.DB) *cobra.Command {
 	return &cobra.Command{
-		Use:   "it <command|flags|name>",
-		Short: "Execute commands through an interactive prompt",
+		Use:     TierName,
+		Aliases: []string{"it", "prompt"},
+		Short:   "Execute commands through an interactive prompt",
 		Long: `Interactive prompt.
 This command behaves depending on the arguments received, it requests the missing information.
 
 Given 				Requests
 command 			flags and name
-command and flags 		name
+command and flags 	name
 name 				command and flags`,
 		Example:            example,
 		DisableFlagParsing: true,

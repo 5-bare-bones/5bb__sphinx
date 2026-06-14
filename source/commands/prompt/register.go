@@ -1,4 +1,4 @@
-package it
+package prompt
 
 import (
 	"github.com/5-bare-bones/5bb__sphinx/internal/buildinfo"
