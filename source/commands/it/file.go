@@ -5,7 +5,6 @@ import (
 
 	"github.com/5-bare-bones/5bb__sphinx/vault/file"
 
-	"github.com/AlecAivazis/survey/v2"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -19,19 +18,8 @@ func fileMultiselect(vault *bolt.DB) ([]string, error) {
 		return nil, nil
 	}
 
-	namesQs := []*survey.Question{
-		{
-			Name: "names",
-			Prompt: &survey.MultiSelect{
-				Message: "Choose files:",
-				Options: files,
-				VimMode: true, //TODO: remove VimMode
-			},
-		},
-	}
-
-	names := []string{}
-	if err := ask(namesQs, &names); err != nil {
+	names, err := multiSelect("Choose files:", files)
+	if err != nil {
 		return nil, err
 	}
 
@@ -49,20 +37,16 @@ func fileMvNames(vault *bolt.DB) ([]string, error) {
 	}
 
 	// Request src
-	qs := selectQs("Source", "", files)
-	src := struct{ Name string }{}
-	if err := ask(qs, &src); err != nil {
-		return nil, err
-	}
-
-	// Request dst
-	dstQs := &survey.Input{
-		Message: "Destination:",
-	}
-	dst, err := askOne(dstQs)
+	src, err := selectOne("Source", "", files)
 	if err != nil {
 		return nil, err
 	}
 
-	return []string{src.Name, dst}, nil
+	// Request dst
+	dst, err := input("Destination:", "")
+	if err != nil {
+		return nil, err
+	}
+
+	return []string{src, dst}, nil
 }

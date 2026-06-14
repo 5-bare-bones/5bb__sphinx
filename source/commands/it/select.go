@@ -10,7 +10,6 @@ import (
 	"github.com/5-bare-bones/5bb__sphinx/vault/totp"
 	bolt "go.etcd.io/bbolt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -33,18 +32,16 @@ func selectCommands(parent *cobra.Command) ([]string, error) {
 		list = append([]string{"self"}, list...)
 	}
 
-	qs := selectQs("Choose a command:", parent.UsageString(), list)
-	cmd := struct{ Name string }{}
-
-	if err := ask(qs, &cmd); err != nil {
+	name, err := selectOne("Choose a command:", "", list)
+	if err != nil {
 		return nil, err
 	}
 
-	if cmd.Name == "self" {
+	if name == "self" {
 		return []string{}, nil
 	}
 
-	current, _, err := parent.Find([]string{cmd.Name})
+	current, _, err := parent.Find([]string{name})
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +52,7 @@ func selectCommands(parent *cobra.Command) ([]string, error) {
 		return nil, err
 	}
 
-	result := append([]string{cmd.Name}, child...)
+	result := append([]string{name}, child...)
 	return result, nil
 }
 
@@ -69,12 +66,7 @@ func selectFlags(root *cobra.Command, commands []string) ([]string, error) {
 		return nil, nil
 	}
 
-	flagQs := &survey.Input{
-		Message: "Flags:",
-		Help:    "\n" + cmd.LocalFlags().FlagUsages(),
-	}
-
-	flags, err := askOne(flagQs)
+	flags, err := input("Flags:", cmd.LocalFlags().FlagUsages())
 	if err != nil {
 		return nil, err
 	}
@@ -117,40 +109,31 @@ func selectName(vault *bolt.DB, commands []string) (string, error) {
 		}
 	}
 
-	qs := selectQs(message, "", list)
-	chosen := struct{ Name string }{}
-
-	if err := ask(qs, &chosen); err != nil {
+	chosen, err := selectOne(message, "", list)
+	if err != nil {
 		return "", err
 	}
 
 	// The user selected all, hence return no name
-	if chosen.Name == "all" {
-		chosen.Name = ""
+	if chosen == "all" {
+		chosen = ""
 	}
 
-	return chosen.Name, nil
+	return chosen, nil
 }
 
 func selectManager(vault *bolt.DB) (string, error) {
 	list := []string{"1Password", "Bitwarden", "Keepass", "KeepassXC", "Lastpass"}
-	qs := selectQs("Choose a manager:", "", list)
-	manager := struct{ Name string }{}
-
-	if err := ask(qs, &manager); err != nil {
+	manager, err := selectOne("Choose a manager:", "", list)
+	if err != nil {
 		return "", err
 	}
 
-	return manager.Name, nil
+	return manager, nil
 }
 
 func inputName() (string, error) {
-	nameQs := &survey.Input{
-		Message: "Name:",
-		Help:    "The name mustn't be empty nor include \"//\"",
-	}
-
-	name, err := askOne(nameQs)
+	name, err := input("Name:", "The name mustn't be empty nor include \"//\"")
 	if err != nil {
 		return "", err
 	}
